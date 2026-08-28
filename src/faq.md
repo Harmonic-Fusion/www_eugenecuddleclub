@@ -8,15 +8,12 @@ description: "Common questions about Eugene Cuddle Club events: is it sexual, do
 
 No. Our containers are non-sexual, and that's a promise rather than a preference. Clothes stay on, there's no contact with genitals, breasts, or buttocks, no grinding or kissing, and no propositioning anyone during the event. The promise is what makes it possible to relax. The full rules are in the [code of conduct](/code-of-conduct/).
 
-## What's the difference between Snuggle Dance and Snuggle Puddle?
 
-Snuggle Dance is built around movement: we teach Micro Fusion partner dance, and much of the evening happens on your feet. Snuggle Puddle is slower and lower to the ground, with no dance to learn — structured consent and touch exercises, then open time resting together on cushions and mats.
+## What if sexuality arises?
 
-Both are sober, platonic, and facilitated, and both teach something. Pick whichever sounds more like what you actually want tonight. Each ticket listing says which format it is.
+Sometimes it does. Sustained, warm, affectionate touch can produce arousal or a flicker of attraction, and that's a normal thing bodies and hearts do — not a rule you broke and not something to be ashamed of. What matters is what you do next, not what you felt.
 
-## Do I need to know how to dance?
-
-No. At a Snuggle Dance, Micro Fusion is taught from scratch on the night and it's built to be learnable in one session — small movements, no footwork to memorize, no experience assumed. At a Snuggle Puddle there's no dancing at all.
+Shift your position, change the kind of contact, or take a break in the opt-out space until you settle. You never need to explain why. Don't make it someone else's problem: no acting on it, no commenting on anyone's body, and no propositioning during the event. If you want to ask someone out, do it another day and off site, so the evening stays a place where nobody has to field advances. If it feels like a lot, tell a facilitator — they've heard it before and they'll help you find your footing. The [code of conduct](/code-of-conduct/) says the same thing in fewer words.
 
 ## Do I need to bring a partner?
 
@@ -49,6 +46,16 @@ Within the arrival window, which is the half hour between doors opening and door
 ## What should I wear?
 
 Comfortable clothes you can move, sit, and lie down in, and that you're happy to stay fully dressed in all evening. Layers are useful, since you'll be moving between a warm indoor dance floor and an outdoor fire pit.
+
+## What's the difference between Snuggle Dance and Snuggle Puddle?
+
+Snuggle Dance is built around movement: we teach Micro Fusion partner dance, and much of the evening happens on your feet. Snuggle Puddle is slower and lower to the ground, with no dance to learn — structured consent and touch exercises, then open time resting together on cushions and mats.
+
+Both are sober, platonic, and facilitated, and both teach something. Pick whichever sounds more like what you actually want tonight. Each ticket listing says which format it is.
+
+## Do I need to know how to dance?
+
+No. At a Snuggle Dance, Micro Fusion is taught from scratch on the night and it's built to be learnable in one session — small movements, no footwork to memorize, no experience assumed. At a Snuggle Puddle there's no dancing at all.
 
 ## What if something goes wrong?
 
