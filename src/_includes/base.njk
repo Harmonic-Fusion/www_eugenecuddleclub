@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% if title %}{{ title }} &middot; {% endif %}{{ site.name }}</title>
+    <meta name="description" content="{{ description or site.tagline }}" />
+
+    <meta property="og:title" content="{% if title %}{{ title }} &middot; {% endif %}{{ site.name }}" />
+    <meta property="og:description" content="{{ description or site.tagline }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="{{ site.url }}/assets/img/logo.png" />
+
+    <link rel="icon" href="/assets/img/logo.png" />
+    <link rel="apple-touch-icon" href="/assets/img/logo.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/css/style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="wrap site-header__inner">
+        <a class="brand" href="/">
+          <img class="brand__logo" src="/assets/img/logo.png" alt="" width="48" height="48" />
+          <span class="brand__name">{{ site.name }}</span>
+        </a>
+
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+        >
+          <span class="nav-toggle__bar" aria-hidden="true"></span>
+          <span class="visually-hidden">Menu</span>
+        </button>
+
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+          <ul>
+            {% for item in site.nav %}
+              <li>
+                <a
+                  href="{{ item.url }}"
+                  {% if page.url == item.url %}aria-current="page"{% endif %}
+                >{{ item.text }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      {% if hero %}
+        <div class="hero">
+          <div class="wrap hero__inner">
+            <h1>{{ hero.heading }}</h1>
+            <p>{{ hero.text }}</p>
+            {% if hero.buttons %}
+              <div class="btn-row">
+                {% for button in hero.buttons %}
+                  <a
+                    class="btn {% if not loop.first %}btn--ghost{% endif %}"
+                    href="{{ button.url }}"
+                  >{{ button.text }}</a>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if title and page.url != "/" %}
+        <div class="page-head">
+          <div class="wrap">
+            <h1>{{ title }}</h1>
+            {% if lede %}<p class="lede">{{ lede }}</p>{% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="wrap prose">
+        {{ content | safe }}
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap site-footer__inner">
+        <div>
+          <p class="site-footer__name">{{ site.name }}</p>
+          <p>{{ site.tagline }}</p>
+          <p>{{ site.venue }}<br /><small>{{ site.venueNote }}</small></p>
+        </div>
+        <div>
+          <p><strong>Get in touch</strong></p>
+          <p><a href="mailto:{{ site.email }}">{{ site.email }}</a></p>
+          <ul class="site-footer__links">
+            {% for item in site.nav %}
+              <li><a href="{{ item.url }}">{{ item.text }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="wrap site-footer__legal">
+        <p>&copy; {{ "" | year }} {{ site.name }}. All events are sober, platonic, and consent-based.</p>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        var toggle = document.querySelector(".nav-toggle");
+        var nav = document.getElementById("site-nav");
+        if (!toggle || !nav) return;
+        toggle.addEventListener("click", function () {
+          var open = toggle.getAttribute("aria-expanded") === "true";
+          toggle.setAttribute("aria-expanded", String(!open));
+          nav.classList.toggle("is-open", !open);
+        });
+      })();
+    </script>
+  </body>
+</html>

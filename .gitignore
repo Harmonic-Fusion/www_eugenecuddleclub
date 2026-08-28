@@ -1,0 +1,11 @@
+# Private planning and internal notes. Never commit.
+.plans/
+
+node_modules/
+_site/
+
+.DS_Store
+*.log
+npm-debug.log*
+.env
+.env.*

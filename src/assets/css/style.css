@@ -1,0 +1,589 @@
+/* ---------------------------------------------------------------
+   Eugene Cuddle Club
+   Brand tokens live here. Change a value once and it updates
+   everywhere on the site.
+   --------------------------------------------------------------- */
+
+:root {
+  --primary: #d91ea7;
+  --secondary: #f2d8e4;
+  --lilac: #dca9ff;
+  --mauve: #bea3d9;
+  --header: #404873;
+  --mint: #edfacc;
+  --text: #0c001f;
+
+  /* Darkened primary. The brand pink sits near 4:1 on white, which is
+     fine for buttons but too thin for inline links and small text. */
+  --primary-ink: #a8137f;
+
+  --muted: #55496b;
+  --rule: #e6dff0;
+  --white: #fff;
+
+  --wrap: 46rem;
+  --wrap-wide: 68rem;
+  --radius: 14px;
+
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--white);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--wrap-wide);
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.prose {
+  max-width: var(--wrap);
+  padding-block: 3rem 4rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--white);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+}
+
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Typography ------------------------------------------------ */
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 2.25rem 0 0.75rem;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 2.85rem);
+  margin-top: 0;
+}
+
+h2 {
+  font-size: clamp(1.4rem, 3vw, 1.75rem);
+}
+
+h3 {
+  font-size: 1.15rem;
+}
+
+p,
+ul,
+ol {
+  margin: 0 0 1.15rem;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.25rem;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+}
+
+a {
+  color: var(--primary-ink);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--primary);
+}
+
+strong {
+  font-weight: 600;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 2.75rem 0;
+}
+
+blockquote {
+  margin: 1.75rem 0;
+  padding: 0.25rem 0 0.25rem 1.25rem;
+  border-left: 4px solid var(--lilac);
+  color: var(--muted);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  display: block;
+}
+
+.prose img {
+  margin: 1.75rem 0;
+}
+
+/* --- Header ---------------------------------------------------- */
+
+.site-header {
+  background: var(--header);
+  color: var(--white);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.brand:hover {
+  color: var(--secondary);
+}
+
+.brand__logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  flex: none;
+}
+
+.site-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.15rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-nav a {
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.3rem 0;
+  border-bottom: 2px solid transparent;
+  display: inline-block;
+}
+
+.site-nav a:hover {
+  color: var(--secondary);
+  border-bottom-color: var(--secondary);
+}
+
+.site-nav a[aria-current="page"] {
+  color: var(--white);
+  border-bottom-color: var(--lilac);
+}
+
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  cursor: pointer;
+}
+
+.nav-toggle__bar,
+.nav-toggle__bar::before,
+.nav-toggle__bar::after {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--white);
+  content: "";
+}
+
+.nav-toggle__bar::before {
+  transform: translateY(-6px);
+}
+
+.nav-toggle__bar::after {
+  transform: translateY(4px);
+}
+
+@media (max-width: 47rem) {
+  .nav-toggle {
+    display: block;
+  }
+
+  .site-nav {
+    flex-basis: 100%;
+    display: none;
+  }
+
+  .site-nav.is-open {
+    display: block;
+  }
+
+  .site-nav ul {
+    flex-direction: column;
+    gap: 0;
+    padding-bottom: 0.75rem;
+  }
+
+  .site-nav a {
+    display: block;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* --- Page head ------------------------------------------------- */
+
+.page-head {
+  background: var(--secondary);
+  padding-block: 2.75rem;
+}
+
+.page-head h1 {
+  margin: 0;
+}
+
+.page-head .lede {
+  margin: 0.85rem 0 0;
+  max-width: 42rem;
+  font-size: 1.15rem;
+  color: var(--muted);
+}
+
+/* --- Hero (home) ----------------------------------------------- */
+
+.hero {
+  background: linear-gradient(160deg, var(--secondary), var(--lilac));
+  padding-block: 4rem;
+  margin-bottom: 0;
+}
+
+/* Hero and page-head share the prose column width so their text lines
+   up with the body copy below them. */
+.hero__inner,
+.page-head .wrap {
+  max-width: var(--wrap);
+  margin-inline: auto;
+}
+
+.hero h1 {
+  margin: 0 0 1rem;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  max-width: 38rem;
+}
+
+.hero .btn-row {
+  margin-top: 1.75rem;
+}
+
+/* --- Buttons --------------------------------------------------- */
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.15rem;
+}
+
+.btn {
+  display: inline-block;
+  background: var(--primary);
+  color: var(--white);
+  font-weight: 600;
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  text-decoration: none;
+  border: 2px solid var(--primary);
+}
+
+.btn:hover {
+  background: var(--primary-ink);
+  border-color: var(--primary-ink);
+  color: var(--white);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--primary-ink);
+  border-color: var(--primary);
+}
+
+.btn--ghost:hover {
+  background: var(--primary);
+  color: var(--white);
+}
+
+/* --- Callouts and bands ---------------------------------------- */
+
+.callout {
+  background: var(--mint);
+  border-radius: var(--radius);
+  padding: 1.35rem 1.5rem;
+  margin: 2rem 0;
+}
+
+.callout > :first-child {
+  margin-top: 0;
+}
+
+.callout > :last-child {
+  margin-bottom: 0;
+}
+
+.callout--pink {
+  background: var(--secondary);
+}
+
+.callout--rule {
+  background: var(--white);
+  border: 2px solid var(--mauve);
+}
+
+/* --- Fact list (sober / platonic / facilitated) ---------------- */
+
+.facts {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.facts li {
+  background: var(--secondary);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  margin: 0;
+}
+
+.facts strong {
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+/* --- Agenda / schedule ----------------------------------------- */
+
+.agenda {
+  list-style: none;
+  padding: 0;
+  margin: 1.75rem 0;
+  border-top: 1px solid var(--rule);
+}
+
+.agenda li {
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--rule);
+  margin: 0;
+}
+
+.agenda__label {
+  display: block;
+  font-weight: 700;
+  color: var(--header);
+  margin-bottom: 0.25rem;
+}
+
+/* --- Ticket Tailor widget -------------------------------------- */
+
+.tt-widget {
+  margin: 2rem 0;
+  min-height: 12rem;
+}
+
+.tt-widget-fallback {
+  padding: 1.25rem 0;
+}
+
+/* --- Contact form ---------------------------------------------- */
+
+.contact-form {
+  background: var(--secondary);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  margin: 2rem 0;
+}
+
+.field {
+  margin-bottom: 1.25rem;
+}
+
+.field label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  background: var(--white);
+  border: 2px solid var(--mauve);
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 8rem;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(217, 30, 167, 0.25);
+}
+
+.field__hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* Honeypot. Bots fill hidden fields in; people never see this. */
+.field--hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.contact-form .btn {
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.form-note {
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* --- Footer ---------------------------------------------------- */
+
+.site-footer {
+  background: var(--header);
+  color: var(--white);
+  padding-block: 3rem 1.75rem;
+  margin-top: 3rem;
+}
+
+.site-footer a {
+  color: var(--secondary);
+}
+
+.site-footer a:hover {
+  color: var(--white);
+}
+
+.site-footer__inner {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.site-footer p {
+  margin: 0 0 0.6rem;
+}
+
+.site-footer__name {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.site-footer__links {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+}
+
+.site-footer__legal {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.site-footer__legal p {
+  margin: 0;
+}

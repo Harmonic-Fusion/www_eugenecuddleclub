@@ -1,0 +1,19 @@
+{
+  "name": "Eugene Cuddle Club",
+  "tagline": "Sober, facilitated spaces to practice platonic touch.",
+  "url": "https://eugenecuddleclub.com",
+  "email": "instigators@eugenecuddleclub.com",
+  "venue": "The Bliss Fungalow, Eugene 97405",
+  "venueNote": "Full arrival details are sent after you register.",
+  "ticketsUrl": "https://www.tickettailor.com/events/eugenecuddleclub/",
+  "widgetUrl": "https://www.tickettailor.com/all-tickets/eugenecuddleclub/",
+  "formEndpoint": "",
+  "nav": [
+    { "text": "Home", "url": "/" },
+    { "text": "About", "url": "/about/" },
+    { "text": "Events", "url": "/events/" },
+    { "text": "FAQ", "url": "/faq/" },
+    { "text": "Code of Conduct", "url": "/code-of-conduct/" },
+    { "text": "Contact", "url": "/contact/" }
+  ]
+}
