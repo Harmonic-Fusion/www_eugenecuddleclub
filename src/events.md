@@ -4,8 +4,6 @@ lede: Tickets for upcoming Eugene Cuddle Club evenings, and the shape a typical 
 description: Book tickets for the next Eugene Cuddle Club event and see how an evening runs.
 ---
 
-Every event is capped to what our facilitator count can genuinely hold, so they can sell out. Registration is by name and there are no day-of walk-ins.
-
 ## Upcoming events
 
 <div class="tt-widget">
@@ -28,41 +26,42 @@ Every event is capped to what our facilitator count can genuinely hold, so they 
 
 </div>
 
-## Our two formats
+## Event Formats
 
-Every listing above is one of these. Both are sober, platonic, facilitated, and consent-based &mdash; the difference is what the evening asks of you.
+We have a few formats though read the event for the specifics. Our formats include:
 
 <ul class="facts">
-  <li><strong>Snuggle Dance</strong> Built around movement. We teach Micro Fusion partner dance, then open into social dancing, cuddle space, and the fire pit. Come if you like learning a skill and being on your feet.</li>
-  <li><strong>Snuggle Puddle</strong> Slower and lower to the ground. No dance to learn &mdash; structured consent and touch exercises, then open time settling into sustained contact. Come if what you want is to rest in a pile of friendly people.</li>
+  <li><strong>Snuggle Dance</strong> Built around co-regulating movement. We facilitate structured consent and touch exercises. These nights include Micro Fusion partner dance. Then open into social dancing, cuddle space, and the fire pit.</li>
+  <li><strong>Snuggle Puddle</strong> Slower and lower to the ground. No dance to learn. Structured consent and touch exercises, then open time settling into sustained contact. Come if what you want is to rest in a pile of friendly people.</li>
 </ul>
-
-[More about both formats](/#events)
 
 ## How an evening runs
 
-Below is the usual shape of an event. **Exact times vary, so check the ticket listing above for the specific event you're booking.** Note that doors close half an hour after they open, and we can't let people in after that without disrupting the opening container.
+Below is the usual shape of an event. **Exact times vary, so check the specifics on teh event you're booking**
 
 <ul class="agenda">
   <li>
     <span class="agenda__label">Doors open</span>
-    Arrival and settling in. Journaling paper, tea, and quiet seating available. The childcare space opens at the same time, separately staffed.
+    Arrival and settling in. Journaling paper, tea, and quiet seating available. If childcare is provided this begins now in a separate space.
   </li>
   <li>
     <span class="agenda__label">Doors close</span>
-    Thirty minutes after opening. Please arrive inside that window.
+    We want to create a very intentional container where everyone has the experience to create a shared understanding of touch. We require everyone attending to be arrive before this time.
   </li>
   <li>
     <span class="agenda__label">Container setting and discussion</span>
-    Naming the need: where touch currently is, and isn't, showing up in your life, then shared norms and consent basics for the evening. We start with conversation in pairs and small groups before any touch is exchanged, so if you're anxious about coming alone, you won't be dropped straight into the deep end.
+    Naming the need for touch, we then share norms and consent basics in a discussion based circle.
+    
+     We start with conversation in pairs and small groups before any touch is exchanged, so if you're anxious about coming alone, you won't be dropped straight into the deep end.
   </li>
   <li>
-    <span class="agenda__label">The taught practice</span>
-    At a Snuggle Dance, this is guided teaching and practice of Micro Fusion partner dance &mdash; slow, responsive, consent-explicit connection &mdash; plus a facilitated consent-based touch game. At a Snuggle Puddle, it's structured touch exercises: asking for exactly the touch you want, hearing a no at no cost, and making a counter-offer rather than going along with something.
+    <span class="agenda__label">Consent practice exercises</span>
+    
+    After the converstaion we break into pairs or small groups and work first on verbal consent. Then we transition to exercises with touch. At dance nights this includes dance instruction. So if you're anxious about coming alone, you won't be dropped straight into the deep end.
   </li>
   <li>
     <span class="agenda__label">Open time</span>
-    At a Snuggle Dance, social dancing and cuddle space indoors with the fire pit outdoors. At a Snuggle Puddle, open cuddle time on cushions and mats. Either way, facilitators are present and circulating, and there are intervals where everyone is invited to get up, move around, and reconnect.
+    After these practices of consent and trust building, we then open up the space for platonic touch and interactions. Every event has a cuddle space to lay down with friends and hold one another. An outside space is also available. Dance events include a dance space. Facilitators are present and there will be some times where everyone is invited to get up, move around, and reconnect.
   </li>
   <li>
     <span class="agenda__label">Closing (optional)</span>
@@ -77,5 +76,7 @@ Below is the usual shape of an event. **Exact times vary, so check the ticket li
 ## Childcare
 
 Dedicated childcare is available on-site in its own separate space, separately staffed, for those who need it in order to attend. Availability varies by event, so check the ticket listing or [email us](mailto:{{ site.email }}).
+
+## Anything else?
 
 Questions before you book? Reach out to the organizing team &mdash; we're happy to talk through what to expect. [{{ site.email }}](mailto:{{ site.email }})
