@@ -37,7 +37,7 @@ Every listing above is one of these. Both are sober, platonic, facilitated, and 
   <li><strong>Snuggle Puddle</strong> Slower and lower to the ground. No dance to learn &mdash; structured consent and touch exercises, then open time settling into sustained contact. Come if what you want is to rest in a pile of friendly people.</li>
 </ul>
 
-[More about both formats](/about/)
+[More about both formats](/#events)
 
 ## How an evening runs
 

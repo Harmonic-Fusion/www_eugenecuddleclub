@@ -96,20 +96,14 @@
         <div>
           <p class="site-footer__name">{{ site.name }}</p>
           <p>{{ site.tagline }}</p>
-          <p>{{ site.venue }}<br /><small>{{ site.venueNote }}</small></p>
         </div>
         <div>
-          <p><strong>Get in touch</strong></p>
-          <p><a href="mailto:{{ site.email }}">{{ site.email }}</a></p>
           <ul class="site-footer__links">
             {% for item in site.nav %}
               <li><a href="{{ item.url }}">{{ item.text }}</a></li>
             {% endfor %}
           </ul>
         </div>
-      </div>
-      <div class="wrap site-footer__legal">
-        <p>&copy; {{ "" | year }} {{ site.name }}. All events are sober, platonic, and consent-based.</p>
       </div>
     </footer>
 

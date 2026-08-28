@@ -10,7 +10,6 @@
   "formEndpoint": "",
   "nav": [
     { "text": "Home", "url": "/" },
-    { "text": "About", "url": "/about/" },
     { "text": "Events", "url": "/events/" },
     { "text": "FAQ", "url": "/faq/" },
     { "text": "Code of Conduct", "url": "/code-of-conduct/" },
