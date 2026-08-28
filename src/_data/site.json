@@ -7,7 +7,6 @@
   "venueNote": "Full arrival details are sent after you register.",
   "ticketsUrl": "https://www.tickettailor.com/events/eugenecuddleclub/",
   "widgetUrl": "https://www.tickettailor.com/all-tickets/eugenecuddleclub/",
-  "formEndpoint": "",
   "nav": [
     { "text": "Home", "url": "/" },
     { "text": "Events", "url": "/events/" },

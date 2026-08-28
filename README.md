@@ -106,19 +106,21 @@ Pushing to the `main` branch triggers the GitHub Action in `.github/workflows/de
 
 ### First-time setup
 
-Not done yet. Create an empty repo on GitHub, then:
+Already done — this repo is `Harmonic-Fusion/www_eugenecuddleclub`. For reference, that was:
 
 ```bash
 git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPO.git
+git remote add origin git@github.com:Harmonic-Fusion/www_eugenecuddleclub.git
 git push -u origin main
 ```
 
-Then in the repo on GitHub, go to **Settings → Pages** and set **Source** to **GitHub Actions**. Under **Custom domain**, enter `eugenecuddleclub.com`.
+Then in the repo on GitHub, go to **Settings → Pages** and set **Source** to **GitHub Actions**. Under **Custom domain**, enter `eugenecuddleclub.com` — the bare domain, with no `www` in front. See [Domain setup](#domain-setup-namecheap) below for why.
 
 ---
 
 ## Domain setup (Namecheap)
+
+The site lives at the bare domain, `eugenecuddleclub.com` — the `@` host. `www` just redirects to it, and GitHub does that redirect for you once the records below are in place.
 
 In the Namecheap dashboard, open your domain and go to the **Advanced DNS** tab. Make sure Nameservers is set to **Namecheap BasicDNS**. Delete the default parking page / URL redirect records, then add:
 
@@ -128,13 +130,15 @@ In the Namecheap dashboard, open your domain and go to the **Advanced DNS** tab.
 | A Record | `@` | `185.199.109.153` |
 | A Record | `@` | `185.199.110.153` |
 | A Record | `@` | `185.199.111.153` |
-| CNAME Record | `www` | `YOUR-USERNAME.github.io.` |
+| CNAME Record | `www` | `harmonic-fusion.github.io.` |
 
-Replace `YOUR-USERNAME` with your GitHub username. The trailing dot on the CNAME value is intentional.
+Three details that trip people up:
 
-DNS changes take anywhere from a few minutes to a couple of hours. Once GitHub verifies the domain, tick **Enforce HTTPS** in Settings → Pages. That checkbox stays greyed out until the certificate is issued, which is normal — check back in an hour.
+- The CNAME value is the **account** name, never the repo name — no `/www_eugenecuddleclub` on the end. GitHub finds the right repo by looking for the one whose `CNAME` file claims this domain, which is why that file matters and shouldn't be edited or deleted. The trailing dot is intentional.
+- The `CNAME` file and **Settings → Pages → Custom domain** must both say `eugenecuddleclub.com`, no `www`. Put `www` in either one and the redirect runs backwards.
+- Don't add a Namecheap **URL Redirect Record** for `www`. It looks like the right tool, but it conflicts with the CNAME record and breaks HTTPS.
 
-The `CNAME` file in this repo tells GitHub which domain to serve. Don't delete it.
+DNS changes take a few minutes to a couple of hours. Once GitHub verifies the domain, tick **Enforce HTTPS** in Settings → Pages; it stays greyed out until the certificate is issued. Then check your work: `https://www.eugenecuddleclub.com` should land on `https://eugenecuddleclub.com` with the `www` gone.
 
 ---
 
@@ -145,31 +149,6 @@ The Events page embeds your Ticket Tailor box office, so **events appear on the 
 The widget renders inside an iframe, which means this site's CSS can't restyle it. Change its colors and fonts in Ticket Tailor under **Box office settings → Box office design**.
 
 If the widget ever shows nothing, get the current embed code from Ticket Tailor under **Promote → Website embed codes** and compare its `data-url` against `widgetUrl` in `src/_data/site.json`.
-
----
-
-## The contact form
-
-The Contact page has a real form, but **it needs a five-minute setup before it works.** Until then the page automatically shows an email link instead, so nothing is broken while you get to it.
-
-This site is static — there's no server of ours to receive a form submission — so the form posts to a third-party service that emails you the message. [Formspree](https://formspree.io/) has a free tier of 50 submissions a month, which is plenty for this.
-
-1. Sign up at [formspree.io](https://formspree.io/) using the address that should receive the messages.
-2. Create a new form. Formspree gives you an endpoint URL like `https://formspree.io/f/abcdwxyz`.
-3. Paste it into `formEndpoint` in `src/_data/site.json`:
-
-```json
-"formEndpoint": "https://formspree.io/f/abcdwxyz"
-```
-
-4. Commit and push. The form replaces the email fallback automatically.
-5. Send yourself a test message. Formspree asks you to confirm your email on the first submission.
-
-[Web3Forms](https://web3forms.com/) and [Getform](https://getform.io/) work the same way if you'd rather not use Formspree — any service that accepts a plain `POST` will do, since the form is standard HTML.
-
-The form already includes a hidden honeypot field named `_gotcha`, which is the convention Formspree uses to silently discard bot submissions. Leave it in place.
-
-To change the fields, edit `src/contact.md`. The "What's this about?" dropdown is just a list of `<option>` lines you can add to or delete.
 
 ---
 
@@ -195,21 +174,3 @@ src/
 CNAME                       the custom domain
 _site/                      generated output, not committed
 ```
-
-### Changing the colors
-
-All brand colors are defined once at the top of `src/assets/css/style.css`:
-
-```css
-:root {
-  --primary: #d91ea7;
-  --secondary: #f2d8e4;
-  --lilac: #dca9ff;
-  --mauve: #bea3d9;
-  --header: #404873;
-  --mint: #edfacc;
-  --text: #0c001f;
-}
-```
-
-Change a value there and it updates everywhere. Note `--primary-ink`, a darkened pink used for links: the brand pink is too light to be readable as small text on white, so it's reserved for buttons and accents.
