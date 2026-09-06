@@ -1,13 +1,13 @@
 ---
 title: Events
-lede: We strive to hold events twice a month, check out what's coming up below
+lede: Check out what's coming up below
 description: Book tickets for the next Eugene Cuddle Club event and see how an evening runs.
 ---
 
 <div class="tt-widget">
   <div class="tt-widget-fallback">
     <div class="btn-row">
-      <a class="btn" href="{{ site.ticketsUrl }}" target="_blank" rel="noopener">Book tickets on Ticket Tailor</a>
+      <a class="btn" href="{{ site.ticketsUrl }}" target="_blank" rel="noopener">Book Tickets</a>
     </div>
   </div>
   <script
@@ -28,7 +28,7 @@ description: Book tickets for the next Eugene Cuddle Club event and see how an e
 
 ## Event Formats
 
-We have a few formats though read the event for the specifics. Our formats include:
+We have a few event formats. Though for the specific event details see the event description. Our common formats include:
 
 <ul class="facts">
   <li><strong>Snuggle Dance</strong> Built around co-regulating movement. We facilitate structured consent and touch exercises. These nights include Micro Fusion partner dance. Then open into social dancing, cuddle space, and the fire pit.</li>
@@ -61,6 +61,7 @@ Below is the usual shape of an event. **Exact times vary, so check the specifics
   </li>
   <li>
     <span class="agenda__label">Open time</span>
+
     After these practices of consent and trust building, we then open up the space for platonic touch and interactions. Every event has a cuddle space to lay down with friends and hold one another. An outside space is also available. Dance events include a dance space. Facilitators are present and there will be some times where everyone is invited to get up, move around, and reconnect.
   </li>
   <li>

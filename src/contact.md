@@ -14,7 +14,7 @@ Goes straight to the organizing team. We usually reply within a couple of days.
 
 ## A few things we can help with
 
-- **Coming alone and feeling nervous about it.** Most people do. Tell us and we'll make sure a facilitator knows to check in with you.
+- **Coming alone and feeling nervous about it.** Many people do. Tell us and we'll make sure check in with you.
 - **Accessibility.** Let us know what you need to participate comfortably and we'll tell you honestly what the space can and can't accommodate.
 - **Childcare.** Availability varies by event, so ask ahead.
 - **Affordability.** If ticket price is the barrier, say so. We'd rather you came.
