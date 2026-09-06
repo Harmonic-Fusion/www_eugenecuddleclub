@@ -10,14 +10,16 @@ Every page is a plain text file. Edit the words, save, push, and the site rebuil
 
 All the page content lives in `src/`, one file per page:
 
-| File | Page |
-| --- | --- |
-| `src/index.md` | Home |
-| `src/about.md` | About |
-| `src/events.md` | Events |
-| `src/faq.md` | FAQ |
+
+| File                     | Page            |
+| ------------------------ | --------------- |
+| `src/index.md`           | Home            |
+| `src/about.md`           | About           |
+| `src/events.md`          | Events          |
+| `src/faq.md`             | FAQ             |
 | `src/code-of-conduct.md` | Code of Conduct |
-| `src/contact.md` | Contact |
+| `src/contact.md`         | Contact         |
+
 
 Open any of them in a text editor. At the top you'll see a block fenced by `---` lines:
 
@@ -28,7 +30,7 @@ lede: The questions we get most often.
 ---
 ```
 
-That's the page title and the subtitle under it. **Everything below the second `---` is the page body.** Edit it like normal writing. A few formatting basics:
+That's the page title and the subtitle under it. **Everything below the second** `---` **is the page body.** Edit it like normal writing. A few formatting basics:
 
 ```markdown
 ## A heading
@@ -59,6 +61,8 @@ To add or remove a menu item, edit the `nav` list in that same file.
 
 ---
 
+
+
 ## Adding photos
 
 1. Drop the image file into `src/assets/photos/`.
@@ -74,6 +78,8 @@ Given the no-photos-at-events rule in the code of conduct, only use images from 
 
 ---
 
+
+
 ## Previewing your changes locally
 
 You need [Node.js](https://nodejs.org/) installed. Once, on a new computer:
@@ -88,11 +94,13 @@ Then any time you want to work on the site:
 npm start
 ```
 
-Open the address it prints (usually <http://localhost:8080>). It reloads automatically as you save. Press `Ctrl+C` in the terminal to stop.
+Open the address it prints (usually [http://localhost:8080](http://localhost:8080)). It reloads automatically as you save. Press `Ctrl+C` in the terminal to stop.
 
 To just build the site without a preview server, run `npm run build`. The finished site lands in `_site/`, which is generated output — never edit it directly and never commit it.
 
 ---
+
+
 
 ## Publishing
 
@@ -118,29 +126,35 @@ Then in the repo on GitHub, go to **Settings → Pages** and set **Source** to *
 
 ---
 
+
+
 ## Domain setup (Namecheap)
 
 The site lives at the bare domain, `eugenecuddleclub.com` — the `@` host. `www` just redirects to it, and GitHub does that redirect for you once the records below are in place.
 
 In the Namecheap dashboard, open your domain and go to the **Advanced DNS** tab. Make sure Nameservers is set to **Namecheap BasicDNS**. Delete the default parking page / URL redirect records, then add:
 
-| Type | Host | Value |
-| --- | --- | --- |
-| A Record | `@` | `185.199.108.153` |
-| A Record | `@` | `185.199.109.153` |
-| A Record | `@` | `185.199.110.153` |
-| A Record | `@` | `185.199.111.153` |
+
+| Type         | Host  | Value                        |
+| ------------ | ----- | ---------------------------- |
+| A Record     | `@`   | `185.199.108.153`            |
+| A Record     | `@`   | `185.199.109.153`            |
+| A Record     | `@`   | `185.199.110.153`            |
+| A Record     | `@`   | `185.199.111.153`            |
 | CNAME Record | `www` | `harmonic-fusion.github.io.` |
+
 
 Three details that trip people up:
 
-- The CNAME value is the **account** name, never the repo name — no `/www_eugenecuddleclub` on the end. GitHub finds the right repo by looking for the one whose `CNAME` file claims this domain, which is why that file matters and shouldn't be edited or deleted. The trailing dot is intentional.
-- The `CNAME` file and **Settings → Pages → Custom domain** must both say `eugenecuddleclub.com`, no `www`. Put `www` in either one and the redirect runs backwards.
+- The CNAME record's value is the **account** name, never the repo name — no `/www_eugenecuddleclub` on the end. The trailing dot is intentional.
+- **Settings → Pages → Custom domain** must say `eugenecuddleclub.com`, no `www`. Put `www` there and the redirect runs backwards. That setting is the only thing tying the domain to this repo — the `CNAME` file in the repo root is ignored when publishing from a GitHub Actions workflow, which is what we do. It's harmless to keep, but changing it has no effect.
 - Don't add a Namecheap **URL Redirect Record** for `www`. It looks like the right tool, but it conflicts with the CNAME record and breaks HTTPS.
 
 DNS changes take a few minutes to a couple of hours. Once GitHub verifies the domain, tick **Enforce HTTPS** in Settings → Pages; it stays greyed out until the certificate is issued. Then check your work: `https://www.eugenecuddleclub.com` should land on `https://eugenecuddleclub.com` with the `www` gone.
 
 ---
+
+
 
 ## The tickets widget
 
@@ -152,6 +166,8 @@ If the widget ever shows nothing, get the current embed code from Ticket Tailor 
 
 ---
 
+
+
 ## Private notes
 
 The `.plans/` folder holds internal planning documents and is excluded from git by `.gitignore`. **Nothing in it is ever published.** Keep it that way — it contains phone numbers, venue agreements, and the internal incident response policy.
@@ -159,6 +175,8 @@ The `.plans/` folder holds internal planning documents and is excluded from git 
 Before committing anything unfamiliar, `git status` is worth a glance. If you ever see a file listed there that shouldn't be public, don't commit it.
 
 ---
+
+
 
 ## Project layout
 
@@ -174,3 +192,4 @@ src/
 CNAME                       the custom domain
 _site/                      generated output, not committed
 ```
+

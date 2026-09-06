@@ -1,14 +1,14 @@
 ---
 title: Events
-lede: Tickets for upcoming Eugene Cuddle Club evenings, and the shape a typical event takes.
+lede: We strive to hold events twice a month, check out what's coming up below
 description: Book tickets for the next Eugene Cuddle Club event and see how an evening runs.
 ---
 
-## Upcoming events
-
 <div class="tt-widget">
   <div class="tt-widget-fallback">
-    <p><a href="{{ site.ticketsUrl }}" target="_blank" rel="noopener">Click here to buy tickets</a></p>
+    <div class="btn-row">
+      <a class="btn" href="{{ site.ticketsUrl }}" target="_blank" rel="noopener">Book tickets on Ticket Tailor</a>
+    </div>
   </div>
   <script
     src="https://cdn.tickettailor.com/js/widgets/min/widget.js"
@@ -37,7 +37,7 @@ We have a few formats though read the event for the specifics. Our formats inclu
 
 ## How an evening runs
 
-Below is the usual shape of an event. **Exact times vary, so check the specifics on teh event you're booking**
+Below is the usual shape of an event. **Exact times vary, so check the specifics on the event you're booking**
 
 <ul class="agenda">
   <li>
