@@ -14,6 +14,7 @@ hero:
 
 Many adults don't get much non-sexual touch and it can be hard to find a way to meet the need. Cuddle Club was created to help serve this need. We run structured evenings where consent is taught and practiced, and then we have time to drop in together. Everything is sober, platonic, and the cuddle instigators are committed to holding a safe container for everyone.
 
+{% include "carousel.njk" %}
 
 ## What to expect
 
@@ -28,7 +29,6 @@ Many adults don't get much non-sexual touch and it can be hard to find a way to 
 **All touch in our spaces is invited, not assumed.** Every activity is consent based. You are in choice the whole time, and there is always an opt-out space you can step into and rejoin whenever you like.
 
 </div>
-
 
 
 ## Where we meet

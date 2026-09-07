@@ -1,0 +1,8 @@
+<figure class="carousel" role="region" aria-roledescription="carousel" aria-label="Photos from a recent evening" data-carousel>
+  <div class="carousel__viewport glider" data-carousel-glider>{% for photo in photos %}<div class="carousel__slide"><img src="{{ photo.src }}" alt="{{ photo.alt }}" width="1600" height="1200"{% if loop.first %} fetchpriority="high"{% else %} loading="lazy"{% endif %} decoding="async" /></div>{% endfor %}</div>
+  <div class="carousel__controls">
+    <button type="button" class="carousel__btn" data-carousel-prev aria-label="Previous photo"><span aria-hidden="true">‹</span></button>
+    <div class="carousel__dots" data-carousel-dots></div>
+    <button type="button" class="carousel__btn" data-carousel-next aria-label="Next photo"><span aria-hidden="true">›</span></button>
+  </div>
+</figure>

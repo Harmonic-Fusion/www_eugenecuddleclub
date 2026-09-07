@@ -535,6 +535,115 @@ img {
   color: var(--muted);
 }
 
+/* --- Photo carousel (Glider.js) -------------------------------- */
+
+.carousel {
+  margin: 2.5rem 0;
+  padding: 0;
+}
+
+.carousel__viewport.glider {
+  width: 100%;
+  margin: 0;
+  border-radius: var(--radius);
+  background: var(--secondary);
+  aspect-ratio: 4 / 3;
+}
+
+.carousel .glider-track {
+  height: 100%;
+}
+
+.carousel__slide {
+  height: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.carousel__slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+  margin: 0;
+  display: block;
+}
+
+.carousel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  margin-top: 0.9rem;
+}
+
+.carousel__btn {
+  position: static;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 2px solid var(--mauve);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--header);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 1;
+  left: auto;
+  right: auto;
+  top: auto;
+}
+
+.carousel__btn:hover,
+.carousel__btn:focus {
+  border-color: var(--primary);
+  color: var(--primary-ink);
+  background: var(--white);
+}
+
+.carousel__btn.disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.carousel__dots {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+.carousel__dots .glider-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--mauve);
+  color: transparent;
+}
+
+.carousel__dots .glider-dot:hover,
+.carousel__dots .glider-dot:focus {
+  background: var(--primary-ink);
+}
+
+.carousel__dots .glider-dot.active {
+  background: var(--primary);
+  transform: scale(1.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel__dots .glider-dot.active {
+    transform: none;
+  }
+}
+
 /* --- Footer ---------------------------------------------------- */
 
 .site-footer {

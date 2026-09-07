@@ -31,6 +31,9 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    {% if page.url == "/" %}
+      <link rel="stylesheet" href="/assets/css/vendor/glider.min.css" />
+    {% endif %}
     <link rel="stylesheet" href="/assets/css/style.css" />
   </head>
   <body>
@@ -130,5 +133,9 @@
         });
       })();
     </script>
+    {% if page.url == "/" %}
+      <script src="/assets/js/vendor/glider.min.js" defer></script>
+      <script src="/assets/js/carousel.js" defer></script>
+    {% endif %}
   </body>
 </html>
