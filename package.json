@@ -10,5 +10,8 @@
   },
   "devDependencies": {
     "@11ty/eleventy": "^3.0.0"
+  },
+  "dependencies": {
+    "glider-js": "^1.7.10"
   }
 }

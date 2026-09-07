@@ -40,10 +40,5 @@ description: "The rules that make Eugene Cuddle Club events safe: consent, the n
 
 We can ask anyone to leave at any time, for any reason, without debate at the door. Tickets are refunded. Repeated or serious violations mean not being invited back.
 
-<div class="callout">
-
-Every event has a Lead who is responsible for these decisions, and we say who it is out loud during container setting so you always know who to go to.
-
-</div>
 
 Questions about any of this? [Email us](mailto:{{ site.email }}) before you book. We'd rather talk it through in advance.
