@@ -91,7 +91,7 @@
         </div>
       {% endif %}
 
-      {% if title and page.url != "/" %}
+      {% if title and page.url != "/" and not suppressPageHead %}
         <div class="page-head">
           <div class="wrap">
             <h1>{{ title }}</h1>
@@ -100,9 +100,13 @@
         </div>
       {% endif %}
 
-      <div class="wrap prose">
+      {% if bareMain %}
         {{ content | safe }}
-      </div>
+      {% else %}
+        <div class="wrap prose">
+          {{ content | safe }}
+        </div>
+      {% endif %}
     </main>
 
     <footer class="site-footer">

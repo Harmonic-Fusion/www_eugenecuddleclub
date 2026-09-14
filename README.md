@@ -14,8 +14,8 @@ All the page content lives in `src/`, one file per page:
 | File                     | Page            |
 | ------------------------ | --------------- |
 | `src/index.md`           | Home            |
-| `src/about.md`           | About           |
 | `src/events.md`          | Events          |
+| `src/events/event.md`    | Single event    |
 | `src/faq.md`             | FAQ             |
 | `src/code-of-conduct.md` | Code of Conduct |
 | `src/contact.md`         | Contact         |
@@ -82,21 +82,42 @@ Given the no-photos-at-events rule in the code of conduct, only use images from 
 
 ## Previewing your changes locally
 
-You need [Node.js](https://nodejs.org/) installed. Once, on a new computer:
+You need [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) installed. Once, on a new computer:
 
 ```bash
-npm install
+pnpm install
+```
+
+If you will work on events (local API), also set up the Python proxy once:
+
+```bash
+cd api
+cp .env.example .env
+# Edit .env and set TICKET_TAILOR_API_KEY=sk_…
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+cd ..
+```
+
+Point the site at the local API by editing `src/assets/js/public_keys.js`:
+
+```js
+export const publicKeys = {
+  ticketTailorProxyUrl: "http://localhost:8000",
+};
 ```
 
 Then any time you want to work on the site:
 
 ```bash
-npm start
+pnpm start
 ```
 
-Open the address it prints (usually [http://localhost:8080](http://localhost:8080)). It reloads automatically as you save. Press `Ctrl+C` in the terminal to stop.
+That starts Eleventy on [http://localhost:8080](http://localhost:8080) and the FastAPI proxy on [http://localhost:8000](http://localhost:8000). The API loads secrets from `api/.env`. Both reload as you save. Press `Ctrl+C` to stop.
 
-To just build the site without a preview server, run `npm run build`. The finished site lands in `_site/`, which is generated output — never edit it directly and never commit it.
+To run only one side: `pnpm run start:site` or `pnpm run start:api`.
+
+To just build the site without a preview server, run `pnpm run build`. The finished site lands in `_site/`, which is generated output — never edit it directly and never commit it.
 
 ---
 
@@ -156,13 +177,49 @@ DNS changes take a few minutes to a couple of hours. Once GitHub verifies the do
 
 
 
-## The tickets widget
+## Events (Ticket Tailor API)
 
-The Events page embeds your Ticket Tailor box office, so **events appear on the website automatically when you create them in Ticket Tailor**. You don't edit this site to add an event.
+Events are managed in [Ticket Tailor](https://www.tickettailor.com/). This site loads them through a small FastAPI proxy in `api/` (so the Ticket Tailor secret key never ships to the browser). The Events page lists upcoming and past events; each event has its own page with a **Buy Tickets** button that opens Ticket Tailor checkout. Upcoming events also show attendee names (no emails or phone numbers).
 
-The widget renders inside an iframe, which means this site's CSS can't restyle it. Change its colors and fonts in Ticket Tailor under **Box office settings → Box office design**.
+### 1. Create a Ticket Tailor API key
 
-If the widget ever shows nothing, get the current embed code from Ticket Tailor under **Promote → Website embed codes** and compare its `data-url` against `widgetUrl` in `src/_data/site.json`.
+1. Sign in to Ticket Tailor and open your box office.
+2. Go to **Box office settings → API** (or **Developers / API keys**, depending on the UI).
+3. Create an API key. It looks like `sk_…` and only accesses that box office.
+4. See the [Ticket Tailor API docs](https://developers.tickettailor.com/docs/api/ticket-tailor-api) for auth details (HTTP Basic Auth: key as username, empty password).
+
+### 2. Run the API locally
+
+One-time setup is under [Previewing your changes locally](#previewing-your-changes-locally). Day to day, `pnpm start` runs the API with the site (uvicorn reads `api/.env` automatically).
+
+API only:
+
+```bash
+pnpm run start:api
+```
+
+Or with Docker from `api/`:
+
+```bash
+docker build -t ecc-events-api .
+docker run --rm -p 8000:8000 --env-file .env -e PORT=8000 ecc-events-api
+```
+
+### 3. Deploy the API to Railway
+
+1. Create a new Railway project and service from this repo.
+2. Set the service **Root Directory** to `api/` (so it finds `Dockerfile` and `railway.toml`).
+3. Add variables:
+   - `TICKET_TAILOR_API_KEY` — your `sk_…` key
+   - `CORS_ORIGINS` — `https://eugenecuddleclub.com,http://localhost:8080`
+4. Deploy. Copy the public HTTPS URL Railway gives you.
+5. Put that URL in `src/assets/js/public_keys.js` as `ticketTailorProxyUrl` (no trailing slash required).
+
+`api/railway.toml` configures the Dockerfile builder and `/health` check. Do **not** put the API key in git or in `public_keys.js`.
+
+### 4. Public config file
+
+`src/assets/js/public_keys.js` holds values that are fine to publish (the proxy URL). Secret keys stay in Railway / `api/.env` only.
 
 ---
 
@@ -181,11 +238,20 @@ Before committing anything unfamiliar, `git status` is worth a glance. If you ev
 ## Project layout
 
 ```
+api/                        FastAPI proxy (Docker → Railway)
+  Dockerfile
+  railway.toml
+  config.py                 env-based settings (API key, CORS)
+  main.py
+  ticket_tailor.py
 src/
-  index.md, about.md, ...   the pages you edit
+  index.md, events.md, ...  the pages you edit
+  events/event.md           per-event shell (loads data from the API)
   _data/site.json           shared details and the nav menu
   _includes/base.njk        the page shell: header, footer, nav
   assets/css/style.css      all styling, brand colors at the top
+  assets/js/public_keys.js  public proxy URL (not secrets)
+  assets/js/events-*.js     events list + detail
   assets/img/logo.png       logo and favicon
   assets/photos/            put photos here
 .github/workflows/deploy.yml  auto-publishing

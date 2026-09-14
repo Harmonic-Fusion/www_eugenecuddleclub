@@ -2,10 +2,25 @@
 .plans/
 
 node_modules/
+.pnpm-store/
 _site/
 
 .DS_Store
 *.log
 npm-debug.log*
+pnpm-debug.log*
+
+# Environment variables
 .env
 .env.*
+!.env.example
+
+# API environment variables
+api/.env
+api/.env.*
+!api/.env.example
+api/.venv/
+
+# Python
+__pycache__/
+*.pyc

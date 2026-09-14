@@ -4,21 +4,18 @@ lede: Check out what's coming up below
 description: Book tickets for the next Eugene Cuddle Club event and see how an evening runs.
 ---
 
-<div class="tt-widget">
-  <div class="tt-widget-fallback">
-    <div class="btn-row">
-      <a class="btn" href="{{ site.ticketsUrl }}" target="_blank" rel="noopener">Book Tickets</a>
-    </div>
-  </div>
-  <script
-    src="https://cdn.tickettailor.com/js/widgets/min/widget.js"
-    data-url="{{ site.widgetUrl }}"
-    data-type="inline"
-    data-inline-minimal="false"
-    data-inline-show-logo="false"
-    data-inline-bg-fill="true"
-  ></script>
+## Upcoming events
+
+<div id="events-upcoming" class="events-panel" aria-live="polite">
+  <p class="events-status">Loading events…</p>
 </div>
+
+<p class="events-fallback">
+  Looking for past events?
+  <a href="/events/past/">Past events</a>.
+  Prefer the box office?
+  <a href="{{ site.ticketsUrl }}" target="_blank" rel="noopener">Open Ticket Tailor</a>.
+</p>
 
 <div class="callout callout--rule">
 
@@ -81,3 +78,5 @@ Dedicated childcare is available on-site in its own separate space, separately s
 ## Anything else?
 
 Questions before you book? Reach out to the organizing team &mdash; we're happy to talk through what to expect. [{{ site.email }}](mailto:{{ site.email }})
+
+<script type="module" src="/assets/js/events-list.js"></script>

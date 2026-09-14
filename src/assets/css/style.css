@@ -454,15 +454,213 @@ img {
   margin-bottom: 0.25rem;
 }
 
-/* --- Ticket Tailor widget -------------------------------------- */
+/* --- Event list / detail (Ticket Tailor via proxy API) --------- */
 
-.tt-widget {
-  margin: 2rem 0;
-  min-height: 12rem;
+.events-panel {
+  margin: 0 0 2.5rem;
 }
 
-.tt-widget-fallback {
-  padding: 1.25rem 0;
+.events-panel + h2 {
+  margin-top: 0.5rem;
+}
+
+.events-status {
+  color: var(--muted);
+  margin: 0.5rem 0 1rem;
+}
+
+.events-fallback {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: -1rem 0 2rem;
+}
+
+.event-list {
+  display: grid;
+  gap: 1.25rem;
+  margin: 1rem 0 0;
+}
+
+.event-item {
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.event-item:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.event-item__title {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+
+.event-item__title a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.event-item__title a:hover {
+  color: var(--primary-ink);
+  text-decoration: underline;
+}
+
+.event-item__meta {
+  margin: 0 0 0.4rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.event-item__desc {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* --- Event detail page (Ticket Tailor–like layout) ------------- */
+
+.event-page {
+  padding-bottom: 4rem;
+}
+
+.event-page__top {
+  padding-top: 1.25rem;
+  padding-bottom: 0.75rem;
+}
+
+.event-page__back {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.event-page__back a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.event-page__back a:hover {
+  color: var(--primary-ink);
+  text-decoration: underline;
+}
+
+.event-page__hero {
+  width: 100%;
+  max-height: min(52vw, 28rem);
+  aspect-ratio: 2.2 / 1;
+  overflow: hidden;
+  background:
+    linear-gradient(160deg, var(--secondary), var(--lilac) 55%, var(--mauve));
+}
+
+.event-page__hero img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.event-page__hero--empty {
+  min-height: 10rem;
+}
+
+.event-page__body {
+  max-width: var(--wrap);
+  padding-top: 1.75rem;
+}
+
+.event-page__title {
+  margin: 0 0 1.25rem;
+  font-size: clamp(1.85rem, 4.5vw, 2.6rem);
+  line-height: 1.15;
+  color: var(--header);
+  text-align: left;
+}
+
+.event-page__facts {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0 0 1.5rem;
+}
+
+.event-page__fact {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.event-page__fact-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mauve);
+}
+
+.event-page__fact-value {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.event-page__cta {
+  margin: 0 0 2rem;
+}
+
+.event-page__buy {
+  font-size: 1.05rem;
+  padding: 0.95rem 1.75rem;
+}
+
+.event-page__status {
+  margin: 0;
+  color: var(--muted);
+}
+
+.event-page__description {
+  margin: 0 0 2rem;
+  max-width: 42rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.event-page__description > :first-child {
+  margin-top: 0;
+}
+
+.event-page__description img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  margin: 1rem 0;
+}
+
+.event-page__attendees {
+  margin-top: 2.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--rule);
+  max-width: 42rem;
+}
+
+.event-page__attendees h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.35rem;
+  color: var(--header);
+}
+
+.attendee-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: grid;
+  gap: 0.35rem 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+}
+
+.attendee-list li {
+  margin: 0;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--rule);
 }
 
 /* --- Contact form ---------------------------------------------- */

@@ -20,16 +20,20 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.24.0
+
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
-      - run: npm run build
+      - run: pnpm run build
 
-      # Pinned to v3: upload-pages-artifact v5 emits the immutable-artifacts
+      # Pinned to v3: upload-pages-artifact v5 emits the immutable-tokens
       # format, which deploy-pages v4 cannot consume (deploys green but empty).
       - uses: actions/upload-pages-artifact@v3
         with:
