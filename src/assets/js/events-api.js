@@ -1,5 +1,7 @@
 import { publicKeys } from "./public_keys.js";
 
+const LOG_PREFIX = "[events-api]";
+
 const baseUrl = () => publicKeys.ticketTailorProxyUrl.replace(/\/$/, "");
 
 /**
@@ -7,24 +9,49 @@ const baseUrl = () => publicKeys.ticketTailorProxyUrl.replace(/\/$/, "");
  * @returns {Promise<any>}
  */
 export async function apiGet(path) {
-  const response = await fetch(`${baseUrl()}${path}`, {
-    headers: { Accept: "application/json" },
-  });
+  const url = `${baseUrl()}${path}`;
+  console.info(LOG_PREFIX, "GET", url);
+  let response;
+  try {
+    response = await fetch(url, {
+      headers: { Accept: "application/json" },
+    });
+  } catch (err) {
+    console.error(LOG_PREFIX, "network error", { url, err });
+    const error = new Error(
+      `Could not reach events API at ${url}. Is the API running?`
+    );
+    error.cause = err;
+    error.status = 0;
+    throw error;
+  }
+
   if (!response.ok) {
     let detail = response.statusText;
+    let bodyText = "";
     try {
-      const body = await response.json();
+      bodyText = await response.text();
+      const body = JSON.parse(bodyText);
       detail = body.detail || body.message || detail;
     } catch {
-      /* ignore */
+      if (bodyText) detail = bodyText.slice(0, 200);
     }
+    console.error(LOG_PREFIX, "HTTP error", {
+      url,
+      status: response.status,
+      detail,
+    });
     const error = new Error(
       typeof detail === "string" ? detail : JSON.stringify(detail)
     );
     error.status = response.status;
     throw error;
   }
-  return response.json();
+
+  const payload = await response.json();
+  const count = Array.isArray(payload?.data) ? payload.data.length : undefined;
+  console.info(LOG_PREFIX, "ok", { url, status: response.status, count });
+  return payload;
 }
 
 /**
@@ -226,4 +253,73 @@ export function setStatus(el, message) {
   p.className = "events-status";
   p.textContent = message;
   el.appendChild(p);
+}
+
+/**
+ * Probe whether the subscribe landing page is reachable.
+ * Uses no-cors so a missing ACAO header does not look like a failure;
+ * a resolved opaque response means the host answered.
+ * @param {string} url
+ * @returns {Promise<boolean>}
+ */
+async function canLoadSubscribeUrl(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4000);
+  try {
+    await fetch(url, {
+      method: "GET",
+      mode: "no-cors",
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    return true;
+  } catch (err) {
+    console.warn(LOG_PREFIX, "subscribe URL unreachable", { url, err });
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/**
+ * Empty state when there are no upcoming events.
+ * @param {HTMLElement} el
+ * @param {{ subscribeUrl?: string, email?: string }} [options]
+ */
+export async function setUpcomingEmpty(el, options = {}) {
+  el.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "events-empty";
+
+  const sub = document.createElement("p");
+  sub.className = "events-empty__cta";
+  sub.appendChild(
+    document.createTextNode("No upcoming events right now. ")
+  );
+
+  const subscribeUrl = (options.subscribeUrl || "").trim();
+  const email = (options.email || "").trim();
+  const link = document.createElement("a");
+
+  const useSubscribe =
+    Boolean(subscribeUrl) && (await canLoadSubscribeUrl(subscribeUrl));
+
+  if (useSubscribe) {
+    link.href = subscribeUrl;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = "Join the mailing list";
+  } else if (email) {
+    link.href = `mailto:${email}?subject=${encodeURIComponent(
+      "Cuddle Club mailing list"
+    )}`;
+    link.textContent = "Email us to join the mailing list";
+  } else {
+    link.href = "/contact/";
+    link.textContent = "Contact us to join the mailing list";
+  }
+  sub.appendChild(link);
+
+  wrap.appendChild(sub);
+  el.appendChild(wrap);
 }

@@ -6,22 +6,19 @@ description: Book tickets for the next Eugene Cuddle Club event and see how an e
 
 ## Upcoming events
 
-<div id="events-upcoming" class="events-panel" aria-live="polite">
+<div id="events-upcoming" class="events-panel" aria-live="polite" data-subscribe-url="{{ site.subscribeUrl }}" data-email="{{ site.email }}">
   <p class="events-status">Loading events…</p>
 </div>
-
-<p class="events-fallback">
-  Looking for past events?
-  <a href="/events/past/">Past events</a>.
-  Prefer the box office?
-  <a href="{{ site.ticketsUrl }}" target="_blank" rel="noopener">Open Ticket Tailor</a>.
-</p>
 
 <div class="callout callout--rule">
 
 **Before you book,** please read the [code of conduct](/code-of-conduct/). By attending, you're agreeing to all of it.
 
 </div>
+
+## Past Events
+
+Looking for past events? <a href="/events/past/">Past events</a>.
 
 ## Event Formats
 

@@ -176,13 +176,14 @@ async function init() {
         }
       } catch (err) {
         setStatus(listHost, "Guest list isn’t available right now.");
-        console.error(err);
+        console.error("[event-detail]", "attendees failed", { id, err });
       }
     }
 
     root.appendChild(body);
     document.title = `${event.name || "Event"} · Eugene Cuddle Club`;
   } catch (err) {
+    console.error("[event-detail]", "failed", { id, err });
     root.innerHTML = "";
     const wrap = document.createElement("div");
     wrap.className = "wrap";
@@ -191,7 +192,6 @@ async function init() {
       "We couldn’t load this event. It may have been removed, or the events service is temporarily unavailable."
     );
     root.appendChild(wrap);
-    console.error(err);
   }
 }
 

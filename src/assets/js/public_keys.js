@@ -1,7 +1,8 @@
 /**
  * Public configuration only. Never put Ticket Tailor secret keys here.
- * After deploying the API to Railway, set ticketTailorProxyUrl to that URL.
+ * Local: http://localhost:8000 (pnpm start).
+ * Production: your Railway HTTPS URL, no trailing slash required.
  */
 export const publicKeys = {
-  ticketTailorProxyUrl: "https://YOUR-SERVICE.up.railway.app",
+  ticketTailorProxyUrl: "http://localhost:8000",
 };

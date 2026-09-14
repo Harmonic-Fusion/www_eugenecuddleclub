@@ -3,8 +3,11 @@ import {
   formatEventWhen,
   isUpcoming,
   setStatus,
+  setUpcomingEmpty,
   stripHtml,
 } from "./events-api.js";
+
+const LOG_PREFIX = "[events-list]";
 
 function snippet(description, max = 160) {
   const text = stripHtml(description);
@@ -74,32 +77,43 @@ async function init() {
 
   try {
     const payload = await apiGet("/events");
-    const events = payload.data || [];
+    const events = Array.isArray(payload?.data) ? payload.data : [];
     const now = Math.floor(Date.now() / 1000);
 
+    const upcoming = events
+      .filter((e) => isUpcoming(e, now))
+      .sort((a, b) => (a.start?.unix || 0) - (b.start?.unix || 0));
+    const past = events
+      .filter((e) => !isUpcoming(e, now))
+      .sort((a, b) => (b.start?.unix || 0) - (a.start?.unix || 0));
+
+    console.info(LOG_PREFIX, "loaded", {
+      total: events.length,
+      upcoming: upcoming.length,
+      past: past.length,
+      now,
+    });
+
     if (upcomingEl) {
-      const upcoming = events
-        .filter((e) => isUpcoming(e, now))
-        .sort((a, b) => (a.start?.unix || 0) - (b.start?.unix || 0));
-      renderList(
-        upcomingEl,
-        upcoming,
-        "No upcoming events right now. Check back soon."
-      );
+      if (!upcoming.length) {
+        await setUpcomingEmpty(upcomingEl, {
+          subscribeUrl: upcomingEl.dataset.subscribeUrl || "",
+          email: upcomingEl.dataset.email || "",
+        });
+      } else {
+        renderList(upcomingEl, upcoming, "");
+      }
     }
 
     if (pastEl) {
-      const past = events
-        .filter((e) => !isUpcoming(e, now))
-        .sort((a, b) => (b.start?.unix || 0) - (a.start?.unix || 0));
       renderList(pastEl, past, "No past events to show yet.");
     }
   } catch (err) {
+    console.error(LOG_PREFIX, "failed to load events", err);
     const message =
-      "We couldn’t load events. Please try again later, or book via the box office link below.";
+      "We couldn’t load events. Please try again later.";
     if (upcomingEl) setStatus(upcomingEl, message);
     if (pastEl) setStatus(pastEl, message);
-    console.error(err);
   }
 }
 

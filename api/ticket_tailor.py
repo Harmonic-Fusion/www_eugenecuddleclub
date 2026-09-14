@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import base64
+import logging
 from typing import Any, TypeVar
 
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
 from config import Settings
+
+logger = logging.getLogger("ecc.tickettailor")
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -182,6 +185,7 @@ class TicketTailorClient:
         self, path: str, params: dict[str, Any] | None = None
     ) -> Any:
         url = f"{self._base_url}{path}"
+        logger.info("Ticket Tailor GET %s params=%s", path, params or {})
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(
                 url, headers=self._headers, params=params
@@ -192,7 +196,14 @@ class TicketTailorClient:
                 message = body.get("message") or response.text
             except Exception:
                 message = response.text or "Ticket Tailor request failed"
+            logger.error(
+                "Ticket Tailor %s → %s: %s",
+                path,
+                response.status_code,
+                str(message)[:300],
+            )
             raise TicketTailorError(response.status_code, str(message))
+        logger.info("Ticket Tailor %s → %s", path, response.status_code)
         return response.json()
 
     async def list_all(
@@ -220,6 +231,7 @@ class TicketTailorClient:
                 break
             query["starting_after"] = last_id
 
+        logger.info("Ticket Tailor list %s total=%s", path, len(items))
         return items
 
     async def get_event(self, event_id: str) -> TicketTailorEvent:
