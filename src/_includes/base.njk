@@ -82,7 +82,14 @@
                 {% for button in hero.buttons %}
                   <a
                     class="btn {% if not loop.first %}btn--ghost{% endif %}"
-                    href="{{ button.url }}"
+                    href="{% if button.subscribe %}{{ site.subscribeUrl }}{% else %}{{ button.url }}{% endif %}"
+                    {% if button.subscribe %}
+                      data-subscribe-cta
+                      data-subscribe-url="{{ site.subscribeUrl }}"
+                      data-email="{{ site.email }}"
+                      target="_blank"
+                      rel="noopener"
+                    {% endif %}
                   >{{ button.text }}</a>
                 {% endfor %}
               </div>
@@ -91,7 +98,7 @@
         </div>
       {% endif %}
 
-      {% if title and page.url != "/" %}
+      {% if title and page.url != "/" and not suppressPageHead %}
         <div class="page-head">
           <div class="wrap">
             <h1>{{ title }}</h1>
@@ -100,9 +107,13 @@
         </div>
       {% endif %}
 
-      <div class="wrap prose">
+      {% if bareMain %}
         {{ content | safe }}
-      </div>
+      {% else %}
+        <div class="wrap prose">
+          {{ content | safe }}
+        </div>
+      {% endif %}
     </main>
 
     <footer class="site-footer">

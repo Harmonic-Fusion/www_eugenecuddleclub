@@ -4,12 +4,16 @@
   "private": true,
   "type": "module",
   "description": "Website for Eugene Cuddle Club",
+  "packageManager": "pnpm@10.24.0",
   "scripts": {
-    "start": "eleventy --serve",
+    "start": "concurrently -n site,api -c magenta,cyan \"pnpm run start:site\" \"pnpm run start:api\"",
+    "start:site": "eleventy --serve",
+    "start:api": "cd api && .venv/bin/uvicorn main:app --reload --port 8000",
     "build": "eleventy"
   },
   "devDependencies": {
-    "@11ty/eleventy": "^3.0.0"
+    "@11ty/eleventy": "^3.0.0",
+    "concurrently": "^9.2.1"
   },
   "dependencies": {
     "glider-js": "^1.7.10"
