@@ -8,6 +8,8 @@ hero:
   buttons:
     - text: See upcoming events
       url: /events/
+    - text: Join the mailing list
+      subscribe: true
 ---
 
 <h2 id="about">A different kind of touch practice</h2>
@@ -35,8 +37,19 @@ Many adults don't get much non-sexual touch and it can be hard to find a way to 
 
 We meet at {{ site.venue }}. We have an intentional space we set up for these events. It's a private home, so {{ site.venueNote | lower }}
 
-<div class="btn-row" style="display: flex; justify-content: center;">
+<div class="btn-row btn-row--stack">
   <a class="btn" href="/events/">Register Here</a>
+  <a
+    class="btn btn--ghost"
+    href="{{ site.subscribeUrl }}"
+    data-subscribe-cta
+    data-subscribe-url="{{ site.subscribeUrl }}"
+    data-email="{{ site.email }}"
+    target="_blank"
+    rel="noopener"
+  >Join the mailing list</a>
 </div>
 
 If you're new to this and not sure then check out our [FAQ](/faq/) page which covers many questions. Also feel free to [email us](mailto:{{ site.email }}) to find out more.
+
+<script type="module" src="/assets/js/mailing-list.js"></script>

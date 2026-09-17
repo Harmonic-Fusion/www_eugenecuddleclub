@@ -20,32 +20,30 @@ function snippet(description, max = 160) {
  * @returns {HTMLElement}
  */
 function renderEventItem(event) {
-  const article = document.createElement("article");
-  article.className = "event-item";
+  const link = document.createElement("a");
+  link.className = "event-item";
+  link.href = `/events/event/?id=${encodeURIComponent(event.id)}`;
 
   const title = document.createElement("h3");
   title.className = "event-item__title";
-  const link = document.createElement("a");
-  link.href = `/events/event/?id=${encodeURIComponent(event.id)}`;
-  link.textContent = event.name || "Untitled event";
-  title.appendChild(link);
+  title.textContent = event.name || "Untitled event";
 
   const meta = document.createElement("p");
   meta.className = "event-item__meta";
   meta.textContent = formatEventWhen(event);
 
-  article.appendChild(title);
-  if (meta.textContent) article.appendChild(meta);
+  link.appendChild(title);
+  if (meta.textContent) link.appendChild(meta);
 
   const text = snippet(event.description);
   if (text) {
     const desc = document.createElement("p");
     desc.className = "event-item__desc";
     desc.textContent = text;
-    article.appendChild(desc);
+    link.appendChild(desc);
   }
 
-  return article;
+  return link;
 }
 
 /**

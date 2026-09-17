@@ -82,7 +82,14 @@
                 {% for button in hero.buttons %}
                   <a
                     class="btn {% if not loop.first %}btn--ghost{% endif %}"
-                    href="{{ button.url }}"
+                    href="{% if button.subscribe %}{{ site.subscribeUrl }}{% else %}{{ button.url }}{% endif %}"
+                    {% if button.subscribe %}
+                      data-subscribe-cta
+                      data-subscribe-url="{{ site.subscribeUrl }}"
+                      data-email="{{ site.email }}"
+                      target="_blank"
+                      rel="noopener"
+                    {% endif %}
                   >{{ button.text }}</a>
                 {% endfor %}
               </div>

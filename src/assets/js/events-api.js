@@ -282,6 +282,57 @@ async function canLoadSubscribeUrl(url) {
 }
 
 /**
+ * Resolve the best mailing-list CTA (subscribe page, mailto, or contact).
+ * @param {{ subscribeUrl?: string, email?: string }} [options]
+ * @returns {Promise<{ href: string, text: string, external: boolean }>}
+ */
+export async function resolveSubscribeLink(options = {}) {
+  const subscribeUrl = (options.subscribeUrl || "").trim();
+  const email = (options.email || "").trim();
+
+  if (subscribeUrl && (await canLoadSubscribeUrl(subscribeUrl))) {
+    return {
+      href: subscribeUrl,
+      text: "Join the mailing list",
+      external: true,
+    };
+  }
+  if (email) {
+    return {
+      href: `mailto:${email}?subject=${encodeURIComponent(
+        "Cuddle Club mailing list"
+      )}`,
+      text: "Email us to join the mailing list",
+      external: false,
+    };
+  }
+  return {
+    href: "/contact/",
+    text: "Contact us to join the mailing list",
+    external: false,
+  };
+}
+
+/**
+ * Apply a resolved mailing-list link to an existing anchor.
+ * @param {HTMLAnchorElement} link
+ * @param {{ subscribeUrl?: string, email?: string, text?: string }} [options]
+ */
+export async function applySubscribeLink(link, options = {}) {
+  const resolved = await resolveSubscribeLink(options);
+  link.href = resolved.href;
+  link.textContent = options.text || resolved.text;
+  if (resolved.external) {
+    link.target = "_blank";
+    link.rel = "noopener";
+  } else {
+    link.removeAttribute("target");
+    link.removeAttribute("rel");
+  }
+  return resolved;
+}
+
+/**
  * Empty state when there are no upcoming events.
  * @param {HTMLElement} el
  * @param {{ subscribeUrl?: string, email?: string }} [options]
@@ -297,27 +348,8 @@ export async function setUpcomingEmpty(el, options = {}) {
     document.createTextNode("No upcoming events right now. ")
   );
 
-  const subscribeUrl = (options.subscribeUrl || "").trim();
-  const email = (options.email || "").trim();
   const link = document.createElement("a");
-
-  const useSubscribe =
-    Boolean(subscribeUrl) && (await canLoadSubscribeUrl(subscribeUrl));
-
-  if (useSubscribe) {
-    link.href = subscribeUrl;
-    link.target = "_blank";
-    link.rel = "noopener";
-    link.textContent = "Join the mailing list";
-  } else if (email) {
-    link.href = `mailto:${email}?subject=${encodeURIComponent(
-      "Cuddle Club mailing list"
-    )}`;
-    link.textContent = "Email us to join the mailing list";
-  } else {
-    link.href = "/contact/";
-    link.textContent = "Contact us to join the mailing list";
-  }
+  await applySubscribeLink(link, options);
   sub.appendChild(link);
 
   wrap.appendChild(sub);
