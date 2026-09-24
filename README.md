@@ -205,7 +205,7 @@ DNS changes take a few minutes to a couple of hours. Once GitHub verifies the do
 
 ## Events (Ticket Tailor API)
 
-Events are managed in [Ticket Tailor](https://www.tickettailor.com/). This site loads them through a small FastAPI proxy in `api/` (so the Ticket Tailor secret key never ships to the browser). The Events page lists upcoming and past events; each event has its own page with a **Buy Tickets** button that opens Ticket Tailor checkout.
+Events are managed in [Ticket Tailor](https://www.tickettailor.com/). This site loads them through a small FastAPI proxy in `api/` (so the Ticket Tailor secret key never ships to the browser). The Events page lists upcoming and past events; each event page embeds Ticket Tailor’s inline checkout widget for that event.
 
 **Sign-in** is required to see who’s coming and the Fungalow Google Maps link. Only emails that appear on Ticket Tailor issued tickets can sign in (Google SSO for Gmail, or a Resend email code / magic link). Accounts are managed on `/account/`.
 
@@ -238,7 +238,7 @@ Fill these in `api/.env` (and Railway Variables in production):
 
 | Variable | Purpose |
 | -------- | ------- |
-| `DATABASE_URL` | Postgres (`postgresql+asyncpg://…`) |
+| `DATABASE_URL` | Postgres (Railway’s `postgresql://` URL is fine) |
 | `JWT_SECRET` | Long random secret for session tokens |
 | `SITE_URL` | Site origin, e.g. `http://localhost:8080` or `https://eugenecuddleclub.com` |
 | `RESEND_API_KEY` / `RESEND_FROM` | Transactional login emails |
@@ -268,17 +268,17 @@ Create a new revision after model changes:
 
 1. Create a new Railway project and service from this repo.
 2. Set the service **Root Directory** to `api/` (so it finds `Dockerfile` and `railway.toml`).
-3. Add a **Postgres** plugin and set `DATABASE_URL` to the async URL Railway provides (use the `postgresql+asyncpg://` scheme; if Railway gives `postgresql://`, change the scheme to `postgresql+asyncpg://`).
+3. Add a **Postgres** plugin and wire `DATABASE_URL` from it (Railway’s `postgresql://` URL is fine — the API rewrites it to `postgresql+asyncpg://` automatically).
 4. Add variables:
    - `TICKET_TAILOR_API_KEY` — your `sk_…` key
    - `CORS_ORIGINS` — `https://eugenecuddleclub.com,http://localhost:8080`
    - `JWT_SECRET`, `SITE_URL=https://eugenecuddleclub.com`
    - `RESEND_API_KEY`, `RESEND_FROM`
    - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI=https://<railway-host>/auth/google/callback`
-5. Deploy. The container runs `alembic upgrade head` then uvicorn. Copy the public HTTPS URL Railway gives you.
+5. Deploy. Each start runs `alembic upgrade head` via `entrypoint.sh`, then uvicorn. Copy the public HTTPS URL Railway gives you.
 6. Put that URL in `src/assets/js/public_keys.js` as `ticketTailorProxyUrl` (no trailing slash required).
 
-`api/railway.toml` configures the Dockerfile builder and `/health` check. Do **not** put secrets in git or in `public_keys.js`.
+`api/railway.toml` configures the Dockerfile builder, start command (migrations + API), and `/health` check. Do **not** put secrets in git or in `public_keys.js`.
 
 ### 6. Public config file
 

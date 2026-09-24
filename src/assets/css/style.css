@@ -621,11 +621,18 @@ img {
 
 .event-page__cta {
   margin: 0 0 2rem;
+  max-width: 42rem;
 }
 
-.event-page__buy {
-  font-size: 1.05rem;
-  padding: 0.95rem 1.75rem;
+.event-page__widget {
+  width: 100%;
+  min-height: 14rem;
+}
+
+.event-page__widget iframe {
+  width: 100% !important;
+  max-width: 100%;
+  border: 0;
 }
 
 .event-page__status {

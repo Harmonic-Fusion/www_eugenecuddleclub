@@ -48,6 +48,34 @@ function factRow(label, value, options = {}) {
 }
 
 /**
+ * Inline Ticket Tailor checkout widget for this event.
+ * @see https://cdn.tickettailor.com/js/widgets/min/widget.js
+ * @param {string} widgetUrl
+ */
+function renderTicketWidget(widgetUrl) {
+  // TT's widget.js only matches parent.className === "tt-widget" (exact).
+  const host = document.createElement("div");
+  host.className = "event-page__widget";
+
+  const widget = document.createElement("div");
+  widget.className = "tt-widget";
+
+  const script = document.createElement("script");
+  script.src = "https://cdn.tickettailor.com/js/widgets/min/widget.js";
+  script.async = true;
+  script.setAttribute("data-url", widgetUrl);
+  script.setAttribute("data-type", "inline");
+  script.setAttribute("data-inline-minimal", "true");
+  script.setAttribute("data-inline-show-logo", "false");
+  script.setAttribute("data-inline-bg-fill", "true");
+  script.setAttribute("data-inline-inherit-ref-from-url-param", "");
+  script.setAttribute("data-inline-ref", "ecc_event_page");
+  widget.appendChild(script);
+  host.appendChild(widget);
+  return host;
+}
+
+/**
  * @param {any} event
  * @param {boolean} canBuy
  * @param {boolean} upcoming
@@ -57,13 +85,8 @@ function renderCta(event, canBuy, upcoming) {
   wrap.className = "event-page__cta";
 
   if (canBuy) {
-    const buy = document.createElement("a");
-    buy.className = "btn event-page__buy";
-    buy.href = event.checkout_url;
-    buy.target = "_blank";
-    buy.rel = "noopener noreferrer";
-    buy.textContent = event.call_to_action || "Buy tickets";
-    wrap.appendChild(buy);
+    const widgetUrl = event.checkout_url || event.url;
+    wrap.appendChild(renderTicketWidget(widgetUrl));
     return wrap;
   }
 
@@ -177,7 +200,7 @@ async function init() {
         const note = document.createElement("p");
         note.className = "events-status";
         note.appendChild(
-          document.createTextNode("Sign in to see who’s coming. ")
+          document.createTextNode("Sign in to see who’s coming. You need a ticket to the event to see the guest list.")
         );
         const link = document.createElement("a");
         link.href = loginUrl(
