@@ -200,7 +200,9 @@ async function init() {
         const note = document.createElement("p");
         note.className = "events-status";
         note.appendChild(
-          document.createTextNode("Sign in to see who’s coming. You need a ticket to the event to see the guest list.")
+          document.createTextNode(
+            "Sign in to see who’s coming. Anyone who’s been to an event can view the guest list for upcoming nights."
+          )
         );
         const link = document.createElement("a");
         link.href = loginUrl(

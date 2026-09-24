@@ -20,7 +20,6 @@ All the page content lives in `src/`, one file per page:
 | `src/code-of-conduct.md` | Code of Conduct |
 | `src/contact.md`         | Contact         |
 | `src/login.md`           | Log in          |
-| `src/account.md`         | Account         |
 
 
 Open any of them in a text editor. At the top you'll see a block fenced by `---` lines:
@@ -207,7 +206,7 @@ DNS changes take a few minutes to a couple of hours. Once GitHub verifies the do
 
 Events are managed in [Ticket Tailor](https://www.tickettailor.com/). This site loads them through a small FastAPI proxy in `api/` (so the Ticket Tailor secret key never ships to the browser). The Events page lists upcoming and past events; each event page embeds Ticket Tailor’s inline checkout widget for that event.
 
-**Sign-in** is required to see who’s coming and the Fungalow Google Maps link. Only emails that appear on Ticket Tailor issued tickets can sign in (Google SSO for Gmail, or a Resend email code / magic link). Accounts are managed on `/account/`.
+**Sign-in** is required to see who’s coming and the Fungalow Google Maps link. Only emails that appear on Ticket Tailor issued tickets can sign in (Google SSO for Gmail, or a Resend email code / magic link). Use **Account → Log out** in the nav when signed in.
 
 ### 1. Create a Ticket Tailor API key
 
@@ -314,13 +313,13 @@ api/                        FastAPI proxy (Docker → Railway)
 docker-compose.yaml         local Postgres + API
 src/
   index.md, events.md, ...  the pages you edit
-  login.md / account.md     auth UI
+  login.md                  auth UI
   events/event.md           per-event shell (loads data from the API)
   _data/site.json           shared details and the nav menu
   _includes/base.njk        the page shell: header, footer, nav
   assets/css/style.css      all styling, brand colors at the top
   assets/js/public_keys.js  public proxy URL (not secrets)
-  assets/js/auth.js         JWT helpers + nav Log in / Account
+  assets/js/auth.js         JWT helpers + nav Log in / Account menu
   assets/js/events-*.js     events list + detail
   assets/img/logo.png       logo and favicon
   assets/photos/            put photos here
