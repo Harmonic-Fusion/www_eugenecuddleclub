@@ -8,8 +8,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY config.py main.py ticket_tailor.py ./
+COPY alembic.ini .
+COPY alembic ./alembic
+COPY entrypoint.sh .
+COPY *.py ./
+
+RUN chmod +x entrypoint.sh
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["./entrypoint.sh"]

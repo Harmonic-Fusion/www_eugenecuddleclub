@@ -1,4 +1,5 @@
 import { publicKeys } from "./public_keys.js";
+import { getToken } from "./auth.js";
 
 const LOG_PREFIX = "[events-api]";
 
@@ -6,16 +7,23 @@ const baseUrl = () => publicKeys.ticketTailorProxyUrl.replace(/\/$/, "");
 
 /**
  * @param {string} path
+ * @param {{ auth?: boolean }} [options] Pass auth:false for public endpoints
+ *   so a bad/expired token cannot interfere.
  * @returns {Promise<any>}
  */
-export async function apiGet(path) {
+export async function apiGet(path, options = {}) {
+  const { auth = true } = options;
   const url = `${baseUrl()}${path}`;
-  console.info(LOG_PREFIX, "GET", url);
+  console.info(LOG_PREFIX, "GET", url, { auth });
+  const headers = { Accept: "application/json" };
+  if (auth) {
+    const token = getToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
+
   let response;
   try {
-    response = await fetch(url, {
-      headers: { Accept: "application/json" },
-    });
+    response = await fetch(url, { headers });
   } catch (err) {
     console.error(LOG_PREFIX, "network error", { url, err });
     const error = new Error(

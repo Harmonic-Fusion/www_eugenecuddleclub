@@ -74,7 +74,7 @@ async function init() {
   if (pastEl) setStatus(pastEl, "Loading events…");
 
   try {
-    const payload = await apiGet("/events");
+    const payload = await apiGet("/events", { auth: false });
     const events = Array.isArray(payload?.data) ? payload.data : [];
     const now = Math.floor(Date.now() / 1000);
 

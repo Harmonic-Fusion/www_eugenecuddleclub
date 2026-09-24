@@ -19,6 +19,8 @@ All the page content lives in `src/`, one file per page:
 | `src/faq.md`             | FAQ             |
 | `src/code-of-conduct.md` | Code of Conduct |
 | `src/contact.md`         | Contact         |
+| `src/login.md`           | Log in          |
+| `src/account.md`         | Account         |
 
 
 Open any of them in a text editor. At the top you'll see a block fenced by `---` lines:
@@ -93,9 +95,23 @@ If you will work on events (local API), also set up the Python proxy once:
 ```bash
 cd api
 cp .env.example .env
-# Edit .env and set TICKET_TAILOR_API_KEY=sk_…
+# Edit .env — at minimum TICKET_TAILOR_API_KEY, JWT_SECRET, and DATABASE_URL
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
+cd ..
+```
+
+Start Postgres (and optionally the API container) with Docker Compose from the repo root:
+
+```bash
+docker compose up -d db
+```
+
+Then apply database migrations:
+
+```bash
+cd api
+.venv/bin/alembic upgrade head
 cd ..
 ```
 
@@ -107,6 +123,10 @@ export const publicKeys = {
 };
 ```
 
+For a host-run API against Compose Postgres, keep:
+
+`DATABASE_URL=postgresql+asyncpg://ecc:ecc@localhost:5432/ecc`
+
 Then any time you want to work on the site:
 
 ```bash
@@ -114,6 +134,12 @@ pnpm start
 ```
 
 That starts Eleventy on [http://localhost:8080](http://localhost:8080) and the FastAPI proxy on [http://localhost:8000](http://localhost:8000). The API loads secrets from `api/.env`. Both reload as you save. Press `Ctrl+C` to stop.
+
+Or run API + Postgres entirely in Docker:
+
+```bash
+docker compose up --build
+```
 
 To run only one side: `pnpm run start:site` or `pnpm run start:api`.
 
@@ -179,7 +205,9 @@ DNS changes take a few minutes to a couple of hours. Once GitHub verifies the do
 
 ## Events (Ticket Tailor API)
 
-Events are managed in [Ticket Tailor](https://www.tickettailor.com/). This site loads them through a small FastAPI proxy in `api/` (so the Ticket Tailor secret key never ships to the browser). The Events page lists upcoming and past events; each event has its own page with a **Buy Tickets** button that opens Ticket Tailor checkout. Upcoming events also show attendee names (no emails or phone numbers).
+Events are managed in [Ticket Tailor](https://www.tickettailor.com/). This site loads them through a small FastAPI proxy in `api/` (so the Ticket Tailor secret key never ships to the browser). The Events page lists upcoming and past events; each event has its own page with a **Buy Tickets** button that opens Ticket Tailor checkout.
+
+**Sign-in** is required to see who’s coming and the Fungalow Google Maps link. Only emails that appear on Ticket Tailor issued tickets can sign in (Google SSO for Gmail, or a Resend email code / magic link). Accounts are managed on `/account/`.
 
 ### 1. Create a Ticket Tailor API key
 
@@ -190,7 +218,7 @@ Events are managed in [Ticket Tailor](https://www.tickettailor.com/). This site 
 
 ### 2. Run the API locally
 
-One-time setup is under [Previewing your changes locally](#previewing-your-changes-locally). Day to day, `pnpm start` runs the API with the site (uvicorn reads `api/.env` automatically).
+One-time setup is under [Previewing your changes locally](#previewing-your-changes-locally). Day to day, `pnpm start` runs the API with the site (uvicorn reads `api/.env` automatically). Postgres should already be up (`docker compose up -d db`) and migrations applied (`alembic upgrade head`).
 
 API only:
 
@@ -198,26 +226,61 @@ API only:
 pnpm run start:api
 ```
 
-Or with Docker from `api/`:
+Or full stack with Compose (runs `alembic upgrade head` then uvicorn):
 
 ```bash
-docker build -t ecc-events-api .
-docker run --rm -p 8000:8000 --env-file .env -e PORT=8000 ecc-events-api
+docker compose up --build
 ```
 
-### 3. Deploy the API to Railway
+### 3. Auth providers (Resend + Google)
+
+Fill these in `api/.env` (and Railway Variables in production):
+
+| Variable | Purpose |
+| -------- | ------- |
+| `DATABASE_URL` | Postgres (`postgresql+asyncpg://…`) |
+| `JWT_SECRET` | Long random secret for session tokens |
+| `SITE_URL` | Site origin, e.g. `http://localhost:8080` or `https://eugenecuddleclub.com` |
+| `RESEND_API_KEY` / `RESEND_FROM` | Transactional login emails |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI` | Google OAuth web client |
+
+**Resend:** create an API key at [resend.com](https://resend.com/). For local testing you can use their `onboarding@resend.dev` from-address. For production, verify `eugenecuddleclub.com` in Resend (Domains) and set `RESEND_FROM` to `Eugene Cuddle Club <community@eugenecuddleclub.com>` — that mailbox stays on Namecheap Private Email for receiving; Resend only sends the login codes (add Resend’s SPF/DKIM DNS records without changing Namecheap MX).
+
+**Google:** in Google Cloud Console create an OAuth **Web application** client. Authorized redirect URI must match `GOOGLE_REDIRECT_URI` exactly (local: `http://localhost:8000/auth/google/callback`; production: `https://<your-railway-host>/auth/google/callback`).
+
+### 4. Database migrations (Alembic)
+
+Schema changes live under `api/alembic/versions/`. After pulling new migrations:
+
+```bash
+cd api
+.venv/bin/alembic upgrade head
+```
+
+Create a new revision after model changes:
+
+```bash
+.venv/bin/alembic revision --autogenerate -m "describe change"
+.venv/bin/alembic upgrade head
+```
+
+### 5. Deploy the API to Railway
 
 1. Create a new Railway project and service from this repo.
 2. Set the service **Root Directory** to `api/` (so it finds `Dockerfile` and `railway.toml`).
-3. Add variables:
+3. Add a **Postgres** plugin and set `DATABASE_URL` to the async URL Railway provides (use the `postgresql+asyncpg://` scheme; if Railway gives `postgresql://`, change the scheme to `postgresql+asyncpg://`).
+4. Add variables:
    - `TICKET_TAILOR_API_KEY` — your `sk_…` key
    - `CORS_ORIGINS` — `https://eugenecuddleclub.com,http://localhost:8080`
-4. Deploy. Copy the public HTTPS URL Railway gives you.
-5. Put that URL in `src/assets/js/public_keys.js` as `ticketTailorProxyUrl` (no trailing slash required).
+   - `JWT_SECRET`, `SITE_URL=https://eugenecuddleclub.com`
+   - `RESEND_API_KEY`, `RESEND_FROM`
+   - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI=https://<railway-host>/auth/google/callback`
+5. Deploy. The container runs `alembic upgrade head` then uvicorn. Copy the public HTTPS URL Railway gives you.
+6. Put that URL in `src/assets/js/public_keys.js` as `ticketTailorProxyUrl` (no trailing slash required).
 
-`api/railway.toml` configures the Dockerfile builder and `/health` check. Do **not** put the API key in git or in `public_keys.js`.
+`api/railway.toml` configures the Dockerfile builder and `/health` check. Do **not** put secrets in git or in `public_keys.js`.
 
-### 4. Public config file
+### 6. Public config file
 
 `src/assets/js/public_keys.js` holds values that are fine to publish (the proxy URL). Secret keys stay in Railway / `api/.env` only.
 
@@ -241,16 +304,23 @@ Before committing anything unfamiliar, `git status` is worth a glance. If you ev
 api/                        FastAPI proxy (Docker → Railway)
   Dockerfile
   railway.toml
-  config.py                 env-based settings (API key, CORS)
+  alembic/                  SQLAlchemy migrations
+  config.py                 env-based settings
+  db.py / models.py         Postgres (users, OTPs, ticket emails)
+  auth.py                   login (Google + Resend OTP)
+  email_cache.py            Ticket Tailor buyer-email sync
   main.py
   ticket_tailor.py
+docker-compose.yaml         local Postgres + API
 src/
   index.md, events.md, ...  the pages you edit
+  login.md / account.md     auth UI
   events/event.md           per-event shell (loads data from the API)
   _data/site.json           shared details and the nav menu
   _includes/base.njk        the page shell: header, footer, nav
   assets/css/style.css      all styling, brand colors at the top
   assets/js/public_keys.js  public proxy URL (not secrets)
+  assets/js/auth.js         JWT helpers + nav Log in / Account
   assets/js/events-*.js     events list + detail
   assets/img/logo.png       logo and favicon
   assets/photos/            put photos here

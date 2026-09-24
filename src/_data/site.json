@@ -12,6 +12,7 @@
     { "text": "Events", "url": "/events/" },
     { "text": "FAQ", "url": "/faq/" },
     { "text": "Code of Conduct", "url": "/code-of-conduct/" },
-    { "text": "Contact", "url": "/contact/" }
+    { "text": "Contact", "url": "/contact/" },
+    { "text": "Log in", "url": "/login/", "auth": true }
   ]
 }

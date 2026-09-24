@@ -72,12 +72,13 @@ class TicketTailorEvent(TTModel):
 
 
 class IssuedTicket(TTModel):
-    """Attendee ticket. Email/phone may exist upstream but are never exposed."""
+    """Attendee ticket. Email is used server-side for login eligibility only."""
 
     id: str | None = None
     full_name: str | None = None
     first_name: str | None = None
     last_name: str | None = None
+    email: str | None = None
     status: str | None = None
 
 
@@ -241,12 +242,29 @@ class TicketTailorClient:
     async def list_events(self) -> list[TicketTailorEvent]:
         return await self.list_all("/events", TicketTailorEvent)
 
-    async def list_issued_tickets(self, event_id: str) -> list[IssuedTicket]:
+    async def list_issued_tickets(
+        self, event_id: str | None = None, *, status: str | None = "valid"
+    ) -> list[IssuedTicket]:
+        params: dict[str, Any] = {}
+        if event_id:
+            params["event_id"] = event_id
+        if status:
+            params["status"] = status
         return await self.list_all(
             "/issued_tickets",
             IssuedTicket,
-            {"event_id": event_id, "status": "valid"},
+            params or None,
         )
+
+    async def list_all_issued_ticket_emails(self) -> list[str]:
+        """All ticket emails (any status) for login eligibility cache."""
+        tickets = await self.list_issued_tickets(status=None)
+        emails: list[str] = []
+        for ticket in tickets:
+            raw = (ticket.email or "").strip().lower()
+            if raw:
+                emails.append(raw)
+        return emails
 
 
 def _flag_true(value: str | bool | None) -> bool:
@@ -273,7 +291,7 @@ def is_upcoming(event: PublicEvent | TicketTailorEvent, now_unix: int) -> bool:
 
 
 def serialize_event(event: TicketTailorEvent) -> PublicEvent:
-    """Public-safe event payload (no buyer PII)."""
+    """Public-safe event payload (no buyer PII, no private venue map)."""
     return PublicEvent.from_tt(event)
 
 

@@ -1,17 +1,24 @@
-"""Public read-only proxy between the website and Ticket Tailor."""
+"""Public read-only proxy between the website and Ticket Tailor, plus auth."""
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import time
+from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from sqlalchemy import text
 
-from config import Settings, get_settings
+from auth import require_user, router as auth_router
+from config import FUNGALOW_MAPS_LABEL, FUNGALOW_MAPS_URL, Settings, get_settings
+from db import engine
+from email_cache import email_cache_loop
+from models import User
 from ticket_tailor import (
     PublicEvent,
     TicketTailorClient,
@@ -24,19 +31,11 @@ from ticket_tailor import (
 
 logger = logging.getLogger("ecc.api")
 
-app = FastAPI(title="Eugene Cuddle Club Events API", version="1.0.0")
-
 _cors = os.getenv(
     "CORS_ORIGINS",
     "https://eugenecuddleclub.com,http://localhost:8080",
 )
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[o.strip() for o in _cors.split(",") if o.strip()],
-    allow_credentials=False,
-    allow_methods=["GET"],
-    allow_headers=["*"],
-)
+_cache_task: asyncio.Task | None = None
 
 
 def get_client(
@@ -45,18 +44,64 @@ def get_client(
     return TicketTailorClient(settings)
 
 
+def fungalow_maps_url(event: PublicEvent) -> str | None:
+    name = (event.venue.name or "") if event.venue else ""
+    if "fungalow" in name.casefold():
+        return FUNGALOW_MAPS_URL
+    return None
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    global _cache_task
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("SELECT 1"))
+        logger.info("Database connectivity ok")
+    except Exception:
+        logger.exception("Database connectivity check failed")
+
+    settings = get_settings()
+    client = TicketTailorClient(settings)
+    _cache_task = asyncio.create_task(email_cache_loop(client))
+    origins = [o.strip() for o in _cors.split(",") if o.strip()]
+    logger.info("API starting; CORS origins=%s", origins)
+    yield
+    if _cache_task:
+        _cache_task.cancel()
+        try:
+            await _cache_task
+        except asyncio.CancelledError:
+            pass
+
+
+app = FastAPI(
+    title="Eugene Cuddle Club Events API",
+    version="1.1.0",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[o.strip() for o in _cors.split(",") if o.strip()],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth_router)
+
+
 class EventsListResponse(BaseModel):
     data: list[PublicEvent]
 
 
-class AttendeesResponse(BaseModel):
-    data: list[str]
+class EventSecureDetails(BaseModel):
+    """Authenticated-only fields: exact map link + guest names."""
 
-
-@app.on_event("startup")
-async def _log_startup() -> None:
-    origins = [o.strip() for o in _cors.split(",") if o.strip()]
-    logger.info("API starting; CORS origins=%s", origins)
+    venue_maps_url: str | None = None
+    venue_maps_label: str | None = None
+    attendees: list[str] = []
 
 
 @app.get("/health")
@@ -68,6 +113,7 @@ async def health() -> dict[str, str]:
 async def list_events(
     client: Annotated[TicketTailorClient, Depends(get_client)],
 ) -> EventsListResponse:
+    """Public event list — no auth, no private venue/attendee data."""
     logger.info("GET /events")
     try:
         raw_events = await client.list_events()
@@ -99,6 +145,7 @@ async def get_event(
     event_id: str,
     client: Annotated[TicketTailorClient, Depends(get_client)],
 ) -> PublicEvent:
+    """Public event detail — no auth, no private venue/attendee data."""
     logger.info("GET /events/%s", event_id)
     try:
         raw = await client.get_event(event_id)
@@ -120,12 +167,14 @@ async def get_event(
     return serialize_event(raw)
 
 
-@app.get("/events/{event_id}/attendees", response_model=AttendeesResponse)
-async def get_attendees(
+@app.get("/events/{event_id}/secure", response_model=EventSecureDetails)
+async def get_event_secure(
     event_id: str,
     client: Annotated[TicketTailorClient, Depends(get_client)],
-) -> AttendeesResponse:
-    logger.info("GET /events/%s/attendees", event_id)
+    _user: Annotated[User, Depends(require_user)],
+) -> EventSecureDetails:
+    """Authenticated: Fungalow map link + upcoming attendee names."""
+    logger.info("GET /events/%s/secure", event_id)
     try:
         raw = await client.get_event(event_id)
     except TicketTailorError as exc:
@@ -143,13 +192,17 @@ async def get_attendees(
         raise HTTPException(status_code=404, detail="Event not found")
 
     event = serialize_event(raw)
+    maps_url = fungalow_maps_url(event)
+    details = EventSecureDetails(
+        venue_maps_url=maps_url,
+        venue_maps_label=FUNGALOW_MAPS_LABEL if maps_url else None,
+        attendees=[],
+    )
+
     now = int(time.time())
     if not is_upcoming(event, now):
-        logger.info("Attendees denied for past event %s", event_id)
-        raise HTTPException(
-            status_code=403,
-            detail="Attendee lists are only available for upcoming events",
-        )
+        logger.info("Secure attendees skipped for past event %s", event_id)
+        return details
 
     try:
         tickets = await client.list_issued_tickets(event_id)
@@ -164,11 +217,11 @@ async def get_attendees(
             status_code=exc.status_code, detail=exc.message
         ) from exc
 
-    names = attendee_names(tickets)
+    details.attendees = attendee_names(tickets)
     logger.info(
-        "GET /events/%s/attendees ok: tickets=%s names=%s",
+        "GET /events/%s/secure ok: maps=%s names=%s",
         event_id,
-        len(tickets),
-        len(names),
+        bool(maps_url),
+        len(details.attendees),
     )
-    return AttendeesResponse(data=names)
+    return details
