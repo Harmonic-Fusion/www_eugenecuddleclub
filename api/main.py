@@ -18,6 +18,7 @@ from auth import require_user, router as auth_router
 from config import FUNGALOW_MAPS_LABEL, FUNGALOW_MAPS_URL, Settings, get_settings
 from db import engine
 from email_cache import email_cache_loop
+from mail import build_refund_request_email, send_email
 from models import User
 from ticket_tailor import (
     PublicEvent,
@@ -28,6 +29,7 @@ from ticket_tailor import (
     is_upcoming,
     serialize_event,
     user_has_ticket,
+    user_order_ids,
 )
 
 logger = logging.getLogger("ecc.api")
@@ -37,6 +39,10 @@ _cors = os.getenv(
     "https://eugenecuddleclub.com,http://localhost:8080",
 )
 _cache_task: asyncio.Task | None = None
+
+# (user_id, event_id) -> unix timestamp of last successful refund request
+_refund_request_times: dict[tuple[str, str], float] = {}
+_REFUND_COOLDOWN_SECONDS = 10 * 60
 
 
 def get_client(
@@ -50,6 +56,21 @@ def fungalow_maps_url(event: PublicEvent) -> str | None:
     if "fungalow" in name.casefold():
         return FUNGALOW_MAPS_URL
     return None
+
+
+def _check_refund_rate_limit(user_id: str, event_id: str) -> None:
+    key = (user_id, event_id)
+    now = time.time()
+    last = _refund_request_times.get(key)
+    if last is not None and now - last < _REFUND_COOLDOWN_SECONDS:
+        raise HTTPException(
+            status_code=429,
+            detail="A refund request was already sent recently. Please wait a few minutes.",
+        )
+
+
+def _mark_refund_sent(user_id: str, event_id: str) -> None:
+    _refund_request_times[(user_id, event_id)] = time.time()
 
 
 @asynccontextmanager
@@ -104,6 +125,11 @@ class EventSecureDetails(BaseModel):
     venue_maps_label: str | None = None
     attendees: list[str] = []
     confirmed: bool = False
+    order_ids: list[str] = []
+
+
+class RefundRequestResponse(BaseModel):
+    status: str
 
 
 @app.get("/health")
@@ -222,11 +248,102 @@ async def get_event_secure(
 
     details.attendees = attendee_names(tickets)
     details.confirmed = user_has_ticket(tickets, user.email)
+    if details.confirmed:
+        details.order_ids = user_order_ids(tickets, user.email)
     logger.info(
-        "GET /events/%s/secure ok: maps=%s names=%s confirmed=%s",
+        "GET /events/%s/secure ok: maps=%s names=%s confirmed=%s orders=%s",
         event_id,
         bool(maps_url),
         len(details.attendees),
         details.confirmed,
+        len(details.order_ids),
     )
     return details
+
+
+@app.post(
+    "/events/{event_id}/refund-request",
+    response_model=RefundRequestResponse,
+)
+async def request_event_refund(
+    event_id: str,
+    client: Annotated[TicketTailorClient, Depends(get_client)],
+    user: Annotated[User, Depends(require_user)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> RefundRequestResponse:
+    """Authenticated: email instigators + buyer a refund request for this event."""
+    logger.info("POST /events/%s/refund-request", event_id)
+    _check_refund_rate_limit(str(user.id), event_id)
+
+    try:
+        raw = await client.get_event(event_id)
+    except TicketTailorError as exc:
+        logger.error(
+            "Ticket Tailor get_event %s failed: %s %s",
+            event_id,
+            exc.status_code,
+            exc.message,
+        )
+        raise HTTPException(
+            status_code=exc.status_code, detail=exc.message
+        ) from exc
+
+    if not is_public_event(raw):
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    event = serialize_event(raw)
+
+    try:
+        tickets = await client.list_issued_tickets(event_id)
+    except TicketTailorError as exc:
+        logger.error(
+            "Ticket Tailor list_issued_tickets %s failed: %s %s",
+            event_id,
+            exc.status_code,
+            exc.message,
+        )
+        raise HTTPException(
+            status_code=exc.status_code, detail=exc.message
+        ) from exc
+
+    if not user_has_ticket(tickets, user.email):
+        raise HTTPException(
+            status_code=403,
+            detail="You need a valid ticket for this event to request a refund",
+        )
+
+    order_ids = user_order_ids(tickets, user.email)
+    composed = build_refund_request_email(
+        settings,
+        event=event,
+        requester_email=user.email,
+        order_ids=order_ids,
+    )
+
+    try:
+        send_email(
+            settings,
+            to=composed.to,
+            subject=composed.subject,
+            text=composed.text,
+            html_body=composed.html,
+            reply_to=composed.reply_to,
+            unset_key_log="Dev refund request",
+        )
+    except Exception:
+        logger.exception(
+            "Failed to send refund request for event %s user %s",
+            event_id,
+            user.email,
+        )
+        raise HTTPException(
+            status_code=502, detail="Could not send refund request email"
+        ) from None
+
+    _mark_refund_sent(str(user.id), event_id)
+    logger.info(
+        "POST /events/%s/refund-request ok: orders=%s",
+        event_id,
+        len(order_ids),
+    )
+    return RefundRequestResponse(status="sent")

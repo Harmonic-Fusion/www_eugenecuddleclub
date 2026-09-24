@@ -12,7 +12,6 @@ from urllib.parse import urlencode
 
 import httpx
 import jwt
-import resend
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, EmailStr
@@ -26,6 +25,7 @@ from email_cache import (
     maybe_refresh_on_miss,
     normalize_email,
 )
+from mail import send_email
 from models import LoginOtp, User
 from ticket_tailor import TicketTailorClient
 
@@ -196,33 +196,23 @@ async def check_email(
 def _send_login_email(
     settings: Settings, *, to: str, code: str, magic_url: str
 ) -> None:
-    if not settings.resend_api_key:
-        # WARNING so it shows under uvicorn's default log level.
-        logger.warning(
-            "RESEND_API_KEY unset — login email not sent. "
-            "Dev login code for %s: %s  (link: %s)",
-            to,
-            code,
-            magic_url,
-        )
-        return
-    resend.api_key = settings.resend_api_key
-    resend.Emails.send(
-        {
-            "from": settings.resend_from,
-            "to": [to],
-            "subject": "Your Eugene Cuddle Club login code",
-            "text": (
-                f"Your login code is {code}.\n\n"
-                f"Or open this link to sign in:\n{magic_url}\n\n"
-                "This code expires in 10 minutes."
-            ),
-            "html": (
-                f"<p>Your login code is <strong>{code}</strong>.</p>"
-                f'<p><a href="{magic_url}">Sign in with this link</a></p>'
-                "<p>This code expires in 10 minutes.</p>"
-            ),
-        }
+    text = (
+        f"Your login code is {code}.\n\n"
+        f"Or open this link to sign in:\n{magic_url}\n\n"
+        "This code expires in 10 minutes."
+    )
+    html_body = (
+        f"<p>Your login code is <strong>{code}</strong>.</p>"
+        f'<p><a href="{magic_url}">Sign in with this link</a></p>'
+        "<p>This code expires in 10 minutes.</p>"
+    )
+    send_email(
+        settings,
+        to=[to],
+        subject="Your Eugene Cuddle Club login code",
+        text=text,
+        html_body=html_body,
+        unset_key_log=f"Dev login code for {to}: {code} (link: {magic_url})",
     )
 
 

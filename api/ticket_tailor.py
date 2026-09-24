@@ -75,6 +75,7 @@ class IssuedTicket(TTModel):
     """Attendee ticket. Email is used server-side for login eligibility only."""
 
     id: str | None = None
+    order_id: str | None = None
     full_name: str | None = None
     first_name: str | None = None
     last_name: str | None = None
@@ -317,3 +318,21 @@ def user_has_ticket(tickets: list[IssuedTicket], email: str) -> bool:
         if (ticket.email or "").strip().lower() == target:
             return True
     return False
+
+
+def user_order_ids(tickets: list[IssuedTicket], email: str) -> list[str]:
+    """Distinct Ticket Tailor order IDs for this buyer's tickets on the event."""
+    target = email.strip().lower()
+    if not target:
+        return []
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for ticket in tickets:
+        if (ticket.email or "").strip().lower() != target:
+            continue
+        order_id = (ticket.order_id or "").strip()
+        if not order_id or order_id in seen:
+            continue
+        seen.add(order_id)
+        ordered.append(order_id)
+    return ordered

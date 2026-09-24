@@ -7,10 +7,7 @@ import {
   sanitizeDescriptionHtml,
   setStatus,
 } from "./events-api.js";
-import { isLoggedIn, loginUrl } from "./auth.js";
-
-const REFUND_MAILTO =
-  "mailto:instigators@eugenecuddleclub.com?subject=Ticket%20refund%20request";
+import { apiFetch, isLoggedIn, loginUrl } from "./auth.js";
 
 function ticketsAvailable(event) {
   const available = event.tickets_available;
@@ -106,13 +103,37 @@ function renderConfirmedBanner(event) {
   buyMore.textContent = "Purchase More Tickets";
   actions.appendChild(buyMore);
 
-  const refund = document.createElement("a");
+  const refund = document.createElement("button");
+  refund.type = "button";
   refund.className = "btn btn--ghost";
-  refund.href = REFUND_MAILTO;
   refund.textContent = "Request Refund";
   actions.appendChild(refund);
 
-  banner.appendChild(actions);
+  const feedback = document.createElement("p");
+  feedback.className = "event-page__status";
+  feedback.hidden = true;
+
+  refund.addEventListener("click", async () => {
+    refund.disabled = true;
+    feedback.hidden = false;
+    feedback.textContent = "Sending refund request…";
+    try {
+      await apiFetch(
+        `/events/${encodeURIComponent(event.id)}/refund-request`,
+        { method: "POST" }
+      );
+      feedback.textContent =
+        "Refund request sent — check your email for a copy.";
+      refund.textContent = "Request Sent";
+    } catch (err) {
+      console.error("[event-detail]", "refund request failed", err);
+      feedback.textContent =
+        err?.message || "Could not send refund request. Try again later.";
+      refund.disabled = false;
+    }
+  });
+
+  banner.append(actions, feedback);
   return banner;
 }
 
