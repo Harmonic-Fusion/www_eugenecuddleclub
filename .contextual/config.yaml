@@ -1,0 +1,45 @@
+# Contextual Configuration File
+# Project-specific configuration for contextual development tools
+# These are only used when installing the contextual commands. Otherwise, see
+# the commands for their configuration. No shared global configuration.
+
+# Specifications directory (relative to project root)
+# SPECS_DIR: ./specs
+
+# Main branch name for merges
+# MAIN_BRANCH: main
+
+# Merge commit message template
+# MERGE_TEMPLATE: |
+#   Merge {FEATURE_BRANCH}: {DESCRIPTION}
+#   - {commit_hash}: one line per commit included.
+#   ...
+#   spec: {FEATURE_CONTEXT}
+
+# Folder Analyzer - Exclude Patterns
+# List of patterns to exclude during analysis (case-insensitive substring match)
+# ANALYZE_EXCLUDE_PATTERNS:
+#   - cache
+#   - __pycache__
+#   - node_modules
+#   - vendor
+#   - dist
+#   - build
+#   - .pytest_cache
+#   - .tox
+#   - venv
+#   - .venv
+#   - .env
+#   - .next
+#   - .nuxt
+#   - .bundle
+#   - "*.egg-info"
+#   - target
+#   - .gradle
+
+# Folder Analyzer - Include Patterns
+# List of patterns to always include (overrides skip patterns)
+# ANALYZE_INCLUDE_PATTERNS: []
+
+# Global context root file (optional)
+# CONTEXT_ROOT: README.md
