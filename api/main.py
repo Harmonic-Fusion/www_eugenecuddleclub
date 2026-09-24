@@ -27,6 +27,7 @@ from ticket_tailor import (
     is_public_event,
     is_upcoming,
     serialize_event,
+    user_has_ticket,
 )
 
 logger = logging.getLogger("ecc.api")
@@ -102,6 +103,7 @@ class EventSecureDetails(BaseModel):
     venue_maps_url: str | None = None
     venue_maps_label: str | None = None
     attendees: list[str] = []
+    confirmed: bool = False
 
 
 @app.get("/health")
@@ -171,7 +173,7 @@ async def get_event(
 async def get_event_secure(
     event_id: str,
     client: Annotated[TicketTailorClient, Depends(get_client)],
-    _user: Annotated[User, Depends(require_user)],
+    user: Annotated[User, Depends(require_user)],
 ) -> EventSecureDetails:
     """Authenticated: Fungalow map link + upcoming attendee names."""
     logger.info("GET /events/%s/secure", event_id)
@@ -197,6 +199,7 @@ async def get_event_secure(
         venue_maps_url=maps_url,
         venue_maps_label=FUNGALOW_MAPS_LABEL if maps_url else None,
         attendees=[],
+        confirmed=False,
     )
 
     now = int(time.time())
@@ -218,10 +221,12 @@ async def get_event_secure(
         ) from exc
 
     details.attendees = attendee_names(tickets)
+    details.confirmed = user_has_ticket(tickets, user.email)
     logger.info(
-        "GET /events/%s/secure ok: maps=%s names=%s",
+        "GET /events/%s/secure ok: maps=%s names=%s confirmed=%s",
         event_id,
         bool(maps_url),
         len(details.attendees),
+        details.confirmed,
     )
     return details

@@ -9,6 +9,9 @@ import {
 } from "./events-api.js";
 import { isLoggedIn, loginUrl } from "./auth.js";
 
+const REFUND_MAILTO =
+  "mailto:instigators@eugenecuddleclub.com?subject=Ticket%20refund%20request";
+
 function ticketsAvailable(event) {
   const available = event.tickets_available;
   if (available === "false" || available === false) return false;
@@ -76,18 +79,60 @@ function renderTicketWidget(widgetUrl) {
 }
 
 /**
+ * Banner shown when the signed-in user already has a valid ticket.
  * @param {any} event
- * @param {boolean} canBuy
- * @param {boolean} upcoming
  */
-function renderCta(event, canBuy, upcoming) {
-  const wrap = document.createElement("div");
-  wrap.className = "event-page__cta";
+function renderConfirmedBanner(event) {
+  const banner = document.createElement("div");
+  banner.className = "event-page__confirmed";
+  banner.setAttribute("role", "status");
+
+  const title = document.createElement("p");
+  title.className = "event-page__confirmed-title";
+  title.textContent = "You're confirmed!";
+  banner.appendChild(title);
+
+  const actions = document.createElement("div");
+  actions.className = "btn-row";
+
+  const buyMore = document.createElement("a");
+  buyMore.className = "btn";
+  buyMore.href =
+    event.checkout_url ||
+    event.url ||
+    "https://www.tickettailor.com/events/eugenecuddleclub/";
+  buyMore.target = "_blank";
+  buyMore.rel = "noopener noreferrer";
+  buyMore.textContent = "Purchase More Tickets";
+  actions.appendChild(buyMore);
+
+  const refund = document.createElement("a");
+  refund.className = "btn btn--ghost";
+  refund.href = REFUND_MAILTO;
+  refund.textContent = "Request Refund";
+  actions.appendChild(refund);
+
+  banner.appendChild(actions);
+  return banner;
+}
+
+/**
+ * @param {HTMLElement} wrap
+ * @param {any} event
+ * @param {{ canBuy: boolean, upcoming: boolean, confirmed?: boolean }} options
+ */
+function fillCta(wrap, event, { canBuy, upcoming, confirmed = false }) {
+  wrap.replaceChildren();
+
+  if (confirmed && upcoming) {
+    wrap.appendChild(renderConfirmedBanner(event));
+    return;
+  }
 
   if (canBuy) {
     const widgetUrl = event.checkout_url || event.url;
     wrap.appendChild(renderTicketWidget(widgetUrl));
-    return wrap;
+    return;
   }
 
   const note = document.createElement("p");
@@ -96,7 +141,6 @@ function renderCta(event, canBuy, upcoming) {
     ? "Tickets are not available for this event right now."
     : "This event has passed.";
   wrap.appendChild(note);
-  return wrap;
 }
 
 async function init() {
@@ -175,7 +219,15 @@ async function init() {
 
     if (facts.childElementCount) body.appendChild(facts);
 
-    body.appendChild(renderCta(event, canBuy, upcoming));
+    const cta = document.createElement("div");
+    cta.className = "event-page__cta";
+    // Defer checkout widget until we know if the signed-in user is confirmed.
+    if (isLoggedIn() && upcoming && canBuy) {
+      setStatus(cta, "Checking your ticket…");
+    } else {
+      fillCta(cta, event, { canBuy, upcoming, confirmed: false });
+    }
+    body.appendChild(cta);
 
     const descHtml = sanitizeDescriptionHtml(event.description);
     if (descHtml) {
@@ -232,6 +284,11 @@ async function init() {
           });
           whereRow.replaceWith(replacement);
         }
+        fillCta(cta, event, {
+          canBuy,
+          upcoming,
+          confirmed: Boolean(secure.confirmed),
+        });
         if (upcoming && listHost) {
           const names = secure.attendees || [];
           listHost.innerHTML = "";
@@ -250,6 +307,9 @@ async function init() {
         }
       } catch (err) {
         console.error("[event-detail]", "secure details failed", { id, err });
+        if (upcoming && canBuy) {
+          fillCta(cta, event, { canBuy, upcoming, confirmed: false });
+        }
         if (upcoming && listHost && isLoggedIn()) {
           setStatus(listHost, "Guest list isn’t available right now.");
         }

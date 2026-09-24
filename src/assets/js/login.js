@@ -1,14 +1,16 @@
 import {
   apiFetch,
-  clearToken,
   getToken,
-  loginUrl,
   setToken,
   updateAuthNav,
 } from "./auth.js";
 import { publicKeys } from "./public_keys.js";
 
 const LOG_PREFIX = "[login]";
+const RESEND_COOLDOWN_SEC = 15;
+
+/** @type {ReturnType<typeof setInterval> | null} */
+let resendTimer = null;
 
 function params() {
   return new URLSearchParams(window.location.search);
@@ -28,26 +30,86 @@ function setMessage(el, text, kind = "status") {
   el.appendChild(p);
 }
 
+function clearResendTimer() {
+  if (resendTimer != null) {
+    clearInterval(resendTimer);
+    resendTimer = null;
+  }
+}
+
 function finishLogin(token) {
+  clearResendTimer();
   setToken(token);
   updateAuthNav();
   window.location.replace(nextPath());
 }
 
+function googleStartUrl(email) {
+  return `${publicKeys.ticketTailorProxyUrl.replace(/\/$/, "")}/auth/google/start?email=${encodeURIComponent(email)}`;
+}
+
+function googleIcon() {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  svg.classList.add("auth-google__icon");
+  svg.innerHTML =
+    '<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>';
+  return svg;
+}
+
+/**
+ * @param {HTMLButtonElement} btn
+ * @param {number} seconds
+ */
+function startResendCooldown(btn, seconds = RESEND_COOLDOWN_SEC) {
+  clearResendTimer();
+  let remaining = seconds;
+  btn.disabled = true;
+  const paint = () => {
+    btn.textContent =
+      remaining > 0 ? `Resend code in ${remaining}s` : "Resend code";
+  };
+  paint();
+  resendTimer = setInterval(() => {
+    remaining -= 1;
+    if (remaining <= 0) {
+      clearResendTimer();
+      btn.disabled = false;
+      btn.textContent = "Resend code";
+      return;
+    }
+    paint();
+  }, 1000);
+}
+
 /**
  * @param {HTMLElement} root
  */
-function renderEmailStep(root) {
+function renderLoginStep(root, initialError = "") {
+  clearResendTimer();
   root.innerHTML = "";
 
   const form = document.createElement("form");
   form.className = "auth-form";
   form.noValidate = true;
 
+  const googleBtn = document.createElement("button");
+  googleBtn.className = "btn auth-google";
+  googleBtn.type = "button";
+  googleBtn.append(googleIcon(), document.createTextNode("Log in with Google"));
+
+  const divider = document.createElement("div");
+  divider.className = "auth-divider";
+  divider.setAttribute("role", "separator");
+  const dividerText = document.createElement("span");
+  dividerText.textContent = "or";
+  divider.appendChild(dividerText);
+
   const label = document.createElement("label");
   label.className = "auth-form__label";
   label.htmlFor = "login-email";
-  label.textContent = "Email used for your ticket";
+  label.textContent = "Email";
 
   const input = document.createElement("input");
   input.className = "auth-form__input";
@@ -58,50 +120,96 @@ function renderEmailStep(root) {
   input.required = true;
   input.placeholder = "you@example.com";
 
-  const actions = document.createElement("div");
-  actions.className = "btn-row";
-
   const submit = document.createElement("button");
   submit.className = "btn";
   submit.type = "submit";
   submit.textContent = "Continue";
 
-  actions.appendChild(submit);
   const feedback = document.createElement("div");
   feedback.className = "auth-form__feedback";
+  if (initialError) setMessage(feedback, initialError, "error");
 
-  form.append(label, input, actions, feedback);
+  form.append(googleBtn, divider, label, input, submit, feedback);
   root.appendChild(form);
 
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
+  async function readEligibleEmail() {
     const email = input.value.trim();
-    if (!email) return;
+    if (!email) {
+      input.focus();
+      setMessage(feedback, "Enter the email from your ticket.", "error");
+      return null;
+    }
+    const result = await apiFetch("/auth/check-email", {
+      method: "POST",
+      body: { email },
+      auth: false,
+    });
+    if (!result.allowed) {
+      setMessage(
+        feedback,
+        "We couldn’t find a ticket purchase with that email. Use the address from your Ticket Tailor order.",
+        "error"
+      );
+      return null;
+    }
+    return { email, result };
+  }
+
+  googleBtn.addEventListener("click", async () => {
+    googleBtn.disabled = true;
     submit.disabled = true;
     setMessage(feedback, "Checking…");
     try {
-      const result = await apiFetch("/auth/check-email", {
-        method: "POST",
-        body: { email },
-        auth: false,
-      });
-      if (!result.allowed) {
-        setMessage(
-          feedback,
-          "We couldn’t find a ticket purchase with that email. Use the address from your Ticket Tailor order.",
-          "error"
-        );
+      const checked = await readEligibleEmail();
+      if (!checked) {
+        googleBtn.disabled = false;
         submit.disabled = false;
         return;
       }
-      renderMethodStep(root, email, result);
+      if (checked.result.method !== "google") {
+        setMessage(
+          feedback,
+          "Google sign-in is only available for Gmail addresses. Continue with email instead.",
+          "error"
+        );
+        googleBtn.disabled = false;
+        submit.disabled = false;
+        return;
+      }
+      window.location.assign(googleStartUrl(checked.email));
     } catch (err) {
-      console.error(LOG_PREFIX, "check-email failed", err);
+      console.error(LOG_PREFIX, "google start failed", err);
       setMessage(
         feedback,
         err.message || "Something went wrong. Try again.",
         "error"
       );
+      googleBtn.disabled = false;
+      submit.disabled = false;
+    }
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    googleBtn.disabled = true;
+    submit.disabled = true;
+    setMessage(feedback, "Checking…");
+    try {
+      const checked = await readEligibleEmail();
+      if (!checked) {
+        googleBtn.disabled = false;
+        submit.disabled = false;
+        return;
+      }
+      await startEmailCode(root, checked.email);
+    } catch (err) {
+      console.error(LOG_PREFIX, "email continue failed", err);
+      setMessage(
+        feedback,
+        err.message || "Something went wrong. Try again.",
+        "error"
+      );
+      googleBtn.disabled = false;
       submit.disabled = false;
     }
   });
@@ -110,59 +218,9 @@ function renderEmailStep(root) {
 /**
  * @param {HTMLElement} root
  * @param {string} email
- * @param {{ method?: string, code_allowed?: boolean }} result
- */
-function renderMethodStep(root, email, result) {
-  root.innerHTML = "";
-
-  const wrap = document.createElement("div");
-  wrap.className = "auth-form";
-
-  const intro = document.createElement("p");
-  intro.textContent = `Continue as ${email}`;
-  wrap.appendChild(intro);
-
-  const actions = document.createElement("div");
-  actions.className = "btn-row btn-row--stack";
-
-  if (result.method === "google") {
-    const google = document.createElement("a");
-    google.className = "btn";
-    google.href = `${publicKeys.ticketTailorProxyUrl.replace(/\/$/, "")}/auth/google/start?email=${encodeURIComponent(email)}`;
-    google.textContent = "Continue with Google";
-    actions.appendChild(google);
-  }
-
-  if (result.method === "email" || result.code_allowed) {
-    const codeBtn = document.createElement("button");
-    codeBtn.className =
-      result.method === "google" ? "btn btn--ghost" : "btn";
-    codeBtn.type = "button";
-    codeBtn.textContent =
-      result.method === "google" ? "Email me a code instead" : "Email me a code";
-    codeBtn.addEventListener("click", () => startEmailCode(root, email));
-    actions.appendChild(codeBtn);
-  }
-
-  const back = document.createElement("button");
-  back.className = "btn btn--ghost";
-  back.type = "button";
-  back.textContent = "Use a different email";
-  back.addEventListener("click", () => renderEmailStep(root));
-  actions.appendChild(back);
-
-  const feedback = document.createElement("div");
-  feedback.className = "auth-form__feedback";
-
-  wrap.append(actions, feedback);
-  root.appendChild(wrap);
-}
-
-/**
- * @param {HTMLElement} root
- * @param {string} email
  */
 async function startEmailCode(root, email) {
+  clearResendTimer();
   root.innerHTML = "";
   const feedback = document.createElement("div");
   setMessage(feedback, "Sending a code…");
@@ -177,18 +235,7 @@ async function startEmailCode(root, email) {
     renderCodeStep(root, email);
   } catch (err) {
     console.error(LOG_PREFIX, "email/start failed", err);
-    root.innerHTML = "";
-    const wrap = document.createElement("div");
-    wrap.className = "auth-form";
-    const fb = document.createElement("div");
-    setMessage(fb, err.message || "Could not send email.", "error");
-    const back = document.createElement("button");
-    back.className = "btn";
-    back.type = "button";
-    back.textContent = "Back";
-    back.addEventListener("click", () => renderEmailStep(root));
-    wrap.append(fb, back);
-    root.appendChild(wrap);
+    renderLoginStep(root, err.message || "Could not send email.");
   }
 }
 
@@ -197,13 +244,15 @@ async function startEmailCode(root, email) {
  * @param {string} email
  */
 function renderCodeStep(root, email) {
+  clearResendTimer();
   root.innerHTML = "";
 
   const form = document.createElement("form");
   form.className = "auth-form";
 
   const note = document.createElement("p");
-  note.textContent = `We sent a code to ${email}. Enter it below, or use the link in the email.`;
+  note.className = "auth-form__note";
+  note.textContent = `We sent a code to ${email}.`;
 
   const label = document.createElement("label");
   label.className = "auth-form__label";
@@ -218,27 +267,50 @@ function renderCodeStep(root, email) {
   input.autocomplete = "one-time-code";
   input.required = true;
   input.placeholder = "123456";
-
-  const actions = document.createElement("div");
-  actions.className = "btn-row";
+  input.maxLength = 6;
 
   const submit = document.createElement("button");
   submit.className = "btn";
   submit.type = "submit";
-  submit.textContent = "Sign in";
+  submit.textContent = "Continue";
 
   const resend = document.createElement("button");
   resend.className = "btn btn--ghost";
   resend.type = "button";
   resend.textContent = "Resend code";
-  resend.addEventListener("click", () => startEmailCode(root, email));
 
-  actions.append(submit, resend);
+  const back = document.createElement("button");
+  back.className = "auth-form__back";
+  back.type = "button";
+  back.textContent = "Use a different email";
+  back.addEventListener("click", () => renderLoginStep(root));
+
   const feedback = document.createElement("div");
   feedback.className = "auth-form__feedback";
 
-  form.append(note, label, input, actions, feedback);
+  form.append(note, label, input, submit, resend, back, feedback);
   root.appendChild(form);
+  input.focus();
+  startResendCooldown(resend);
+
+  resend.addEventListener("click", async () => {
+    resend.disabled = true;
+    setMessage(feedback, "Sending a code…");
+    try {
+      await apiFetch("/auth/email/start", {
+        method: "POST",
+        body: { email },
+        auth: false,
+      });
+      setMessage(feedback, "Code sent.");
+      startResendCooldown(resend);
+    } catch (err) {
+      console.error(LOG_PREFIX, "resend failed", err);
+      setMessage(feedback, err.message || "Could not resend code.", "error");
+      resend.disabled = false;
+      resend.textContent = "Resend code";
+    }
+  });
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -270,16 +342,8 @@ async function init() {
       email_mismatch:
         "That Google account didn’t match the email you entered.",
     };
-    setMessage(root, messages[error] || "Sign-in failed. Try again.", "error");
-    const retry = document.createElement("button");
-    retry.className = "btn";
-    retry.type = "button";
-    retry.textContent = "Try again";
-    retry.addEventListener("click", () => {
-      window.history.replaceState({}, "", "/login/");
-      renderEmailStep(root);
-    });
-    root.appendChild(retry);
+    window.history.replaceState({}, "", "/login/");
+    renderLoginStep(root, messages[error] || "Sign-in failed. Try again.");
     return;
   }
 
@@ -301,13 +365,10 @@ async function init() {
       finishLogin(payload.access_token);
     } catch (err) {
       console.error(LOG_PREFIX, "magic link failed", err);
-      setMessage(root, err.message || "That link is invalid or expired.", "error");
-      const retry = document.createElement("button");
-      retry.className = "btn";
-      retry.type = "button";
-      retry.textContent = "Request a new code";
-      retry.addEventListener("click", () => renderEmailStep(root));
-      root.appendChild(retry);
+      renderLoginStep(
+        root,
+        err.message || "That link is invalid or expired."
+      );
     }
     return;
   }
@@ -317,7 +378,7 @@ async function init() {
     return;
   }
 
-  renderEmailStep(root);
+  renderLoginStep(root);
 }
 
 init();

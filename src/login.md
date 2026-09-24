@@ -1,7 +1,7 @@
 ---
 title: Log in
 description: Sign in to see who’s coming and arrival details.
-lede: Sign in with the email you used to buy a ticket.
+lede: Use Google or the email from your ticket.
 ---
 
 <div id="login-app" class="auth-panel">

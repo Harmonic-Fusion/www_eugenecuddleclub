@@ -306,3 +306,14 @@ def attendee_names(tickets: list[IssuedTicket]) -> list[str]:
         if full:
             names.add(full)
     return sorted(names, key=str.casefold)
+
+
+def user_has_ticket(tickets: list[IssuedTicket], email: str) -> bool:
+    """True if any issued ticket belongs to this email (case-insensitive)."""
+    target = email.strip().lower()
+    if not target:
+        return False
+    for ticket in tickets:
+        if (ticket.email or "").strip().lower() == target:
+            return True
+    return False
