@@ -3,6 +3,9 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
+# Runs alembic upgrade head, then uvicorn (see entrypoint.sh).
+# Keep this so a Railway UI start-command override does not skip migrations.
+startCommand = "./entrypoint.sh"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"

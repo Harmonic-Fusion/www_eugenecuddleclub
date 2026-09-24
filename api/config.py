@@ -2,13 +2,24 @@
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _API_DIR = Path(__file__).resolve().parent
 
 FUNGALOW_MAPS_URL = "https://maps.app.goo.gl/45dc2G7VVqfcQSETA"
 FUNGALOW_MAPS_LABEL = "2296 Cleveland, Eugene, Oregon"
+
+
+def async_database_url(url: str) -> str:
+    """Railway (and most hosts) give postgresql://; SQLAlchemy async needs +asyncpg."""
+    if url.startswith("postgres://"):
+        return "postgresql+asyncpg://" + url[len("postgres://") :]
+    if url.startswith("postgresql://"):
+        return "postgresql+asyncpg://" + url[len("postgresql://") :]
+    return url
 
 
 class Settings(BaseSettings):
@@ -37,6 +48,13 @@ class Settings(BaseSettings):
 
     jwt_ttl_seconds: int = 60 * 60 * 24 * 30
     otp_ttl_seconds: int = 60 * 10
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value: Any) -> Any:
+        if isinstance(value, str):
+            return async_database_url(value)
+        return value
 
     @property
     def cors_origin_list(self) -> list[str]:
