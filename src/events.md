@@ -10,6 +10,12 @@ description: Book tickets for the next Eugene Cuddle Club event and see how an e
   <p class="events-status">Loading events…</p>
 </div>
 
+<div id="events-tt-banner" class="callout callout--pink events-tt-banner" hidden>
+  <p><strong>Use Ticket Tailor</strong></p>
+</div>
+
+<div id="events-tortillanet" class="events-panel" hidden></div>
+
 <div class="callout callout--rule">
 
 **Before you book,** please read the [code of conduct](/code-of-conduct/). By attending, you're agreeing to all of it.

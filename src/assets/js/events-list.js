@@ -6,6 +6,7 @@ import {
   setUpcomingEmpty,
   stripHtml,
 } from "./events-api.js";
+import { calendarDay, fetchTortillaEvents } from "./tortillanet.js";
 
 const LOG_PREFIX = "[events-list]";
 
@@ -65,54 +66,283 @@ function renderList(container, events, emptyMessage) {
   container.appendChild(list);
 }
 
-async function init() {
-  const upcomingEl = document.getElementById("events-upcoming");
-  const pastEl = document.getElementById("events-past");
-  if (!upcomingEl && !pastEl) return;
+const PACIFIC = "America/Los_Angeles";
+const TT_ERROR = "We couldn’t load events. Please try again later.";
 
+/**
+ * Ticket Tailor start day in Pacific time, for deduping against TortillaNet.
+ * @param {any} event
+ */
+function ticketTailorDay(event) {
+  if (typeof event?.start?.unix === "number") {
+    return calendarDay(new Date(event.start.unix * 1000), PACIFIC);
+  }
+  if (
+    typeof event?.start?.date === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(event.start.date)
+  ) {
+    return event.start.date;
+  }
+  if (event?.start?.iso) return calendarDay(event.start.iso, PACIFIC);
+  return "";
+}
+
+/**
+ * @param {any} event
+ */
+function formatTortillaWhen(event) {
+  const timeZone = event?.timezone || PACIFIC;
+  const start = new Date(event?.starts_at);
+  if (Number.isNaN(start.getTime())) return "";
+
+  const dateOpts = {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone,
+  };
+  const timeOpts = { hour: "numeric", minute: "2-digit", timeZone };
+  const date = start.toLocaleDateString("en-US", dateOpts);
+  const startTime = start.toLocaleTimeString("en-US", timeOpts);
+  let zone = "";
+  try {
+    zone =
+      new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        timeZoneName: "short",
+      })
+        .formatToParts(start)
+        .find((part) => part.type === "timeZoneName")?.value || "";
+  } catch {
+    zone = "";
+  }
+  const zoneSuffix = zone ? ` ${zone}` : "";
+  const end = event?.ends_at ? new Date(event.ends_at) : null;
+  if (!end || Number.isNaN(end.getTime())) {
+    return `${date} at ${startTime}${zoneSuffix}`;
+  }
+  const endTime = end.toLocaleTimeString("en-US", timeOpts);
+  if (calendarDay(start, timeZone) === calendarDay(end, timeZone)) {
+    return `${date}, ${startTime} – ${endTime}${zoneSuffix}`;
+  }
+  const endDate = end.toLocaleDateString("en-US", dateOpts);
+  return `${date} at ${startTime} – ${endDate} at ${endTime}${zoneSuffix}`;
+}
+
+/**
+ * @param {any} event
+ * @returns {HTMLElement}
+ */
+function renderTortillaItem(event) {
+  const link = document.createElement("a");
+  link.className = "event-item";
+  link.href = event.url;
+  link.target = "_blank";
+  link.rel = "noopener";
+
+  const title = document.createElement("h3");
+  title.className = "event-item__title";
+  title.textContent = event.title || "Untitled event";
+
+  const meta = document.createElement("p");
+  meta.className = "event-item__meta";
+  meta.textContent = formatTortillaWhen(event);
+
+  link.appendChild(title);
+  if (meta.textContent) link.appendChild(meta);
+
+  if (event.location_name) {
+    const place = document.createElement("p");
+    place.className = "event-item__desc";
+    place.textContent = event.location_name;
+    link.appendChild(place);
+  }
+
+  if (event.members_only || event.visibility === "members") {
+    const badge = document.createElement("p");
+    badge.className = "event-item__badge";
+    badge.textContent = "Members only";
+    link.appendChild(badge);
+  }
+
+  return link;
+}
+
+/**
+ * @param {HTMLElement} container
+ * @param {any[]} events
+ */
+function renderTortillaList(container, events) {
+  container.innerHTML = "";
+  const heading = document.createElement("h2");
+  heading.className = "events-tortillanet-heading";
+  heading.textContent = "On TortillaNet";
+  const list = document.createElement("div");
+  list.className = "event-list";
+  for (const event of events) {
+    list.appendChild(renderTortillaItem(event));
+  }
+  container.append(heading, list);
+  container.hidden = false;
+}
+
+/**
+ * @param {HTMLElement | null} el
+ */
+function hidePanel(el) {
+  if (!el) return;
+  el.hidden = true;
+  el.innerHTML = "";
+}
+
+/**
+ * @param {any[]} events
+ */
+function splitTicketTailor(events) {
+  const now = Math.floor(Date.now() / 1000);
+  const upcoming = events
+    .filter((e) => isUpcoming(e, now))
+    .sort((a, b) => (a.start?.unix || 0) - (b.start?.unix || 0));
+  const past = events
+    .filter((e) => !isUpcoming(e, now))
+    .sort((a, b) => (b.start?.unix || 0) - (a.start?.unix || 0));
+  return { upcoming, past, now, total: events.length };
+}
+
+/**
+ * @param {HTMLElement} upcomingEl
+ * @param {any[]} upcoming
+ */
+async function showUpcoming(upcomingEl, upcoming) {
+  upcomingEl.hidden = false;
+  if (!upcoming.length) {
+    await setUpcomingEmpty(upcomingEl, {
+      subscribeUrl: upcomingEl.dataset.subscribeUrl || "",
+      email: upcomingEl.dataset.email || "",
+    });
+  } else {
+    renderList(upcomingEl, upcoming, "");
+  }
+}
+
+/**
+ * Past events page and the subscribe confirmation keep the original list.
+ * @param {HTMLElement | null} upcomingEl
+ * @param {HTMLElement | null} pastEl
+ */
+async function initTicketTailorOnly(upcomingEl, pastEl) {
   if (upcomingEl) setStatus(upcomingEl, "Loading events…");
   if (pastEl) setStatus(pastEl, "Loading events…");
 
   try {
     const payload = await apiGet("/events");
     const events = Array.isArray(payload?.data) ? payload.data : [];
-    const now = Math.floor(Date.now() / 1000);
-
-    const upcoming = events
-      .filter((e) => isUpcoming(e, now))
-      .sort((a, b) => (a.start?.unix || 0) - (b.start?.unix || 0));
-    const past = events
-      .filter((e) => !isUpcoming(e, now))
-      .sort((a, b) => (b.start?.unix || 0) - (a.start?.unix || 0));
+    const split = splitTicketTailor(events);
 
     console.info(LOG_PREFIX, "loaded", {
-      total: events.length,
-      upcoming: upcoming.length,
-      past: past.length,
-      now,
+      total: split.total,
+      upcoming: split.upcoming.length,
+      past: split.past.length,
+      now: split.now,
     });
 
-    if (upcomingEl) {
-      if (!upcoming.length) {
-        await setUpcomingEmpty(upcomingEl, {
-          subscribeUrl: upcomingEl.dataset.subscribeUrl || "",
-          email: upcomingEl.dataset.email || "",
-        });
-      } else {
-        renderList(upcomingEl, upcoming, "");
-      }
-    }
-
-    if (pastEl) {
-      renderList(pastEl, past, "No past events to show yet.");
-    }
+    if (upcomingEl) await showUpcoming(upcomingEl, split.upcoming);
+    if (pastEl) renderList(pastEl, split.past, "No past events to show yet.");
   } catch (err) {
     console.error(LOG_PREFIX, "failed to load events", err);
-    const message =
-      "We couldn’t load events. Please try again later.";
-    if (upcomingEl) setStatus(upcomingEl, message);
-    if (pastEl) setStatus(pastEl, message);
+    if (upcomingEl) setStatus(upcomingEl, TT_ERROR);
+    if (pastEl) setStatus(pastEl, TT_ERROR);
   }
+}
+
+/**
+ * /events: Ticket Tailor and TortillaNet together.
+ * @param {HTMLElement | null} upcomingEl
+ * @param {HTMLElement | null} pastEl
+ * @param {HTMLElement} tortillaEl
+ * @param {HTMLElement | null} bannerEl
+ */
+async function initWithTortilla(upcomingEl, pastEl, tortillaEl, bannerEl) {
+  if (upcomingEl) setStatus(upcomingEl, "Loading events…");
+  if (pastEl) setStatus(pastEl, "Loading events…");
+  if (bannerEl) bannerEl.hidden = true;
+  hidePanel(tortillaEl);
+
+  const [ttResult, tnResult] = await Promise.allSettled([
+    apiGet("/events"),
+    fetchTortillaEvents(),
+  ]);
+
+  let upcoming = [];
+  const ttFailed = ttResult.status !== "fulfilled";
+
+  if (!ttFailed) {
+    const events = Array.isArray(ttResult.value?.data) ? ttResult.value.data : [];
+    const split = splitTicketTailor(events);
+    upcoming = split.upcoming;
+    console.info(LOG_PREFIX, "loaded", {
+      total: split.total,
+      upcoming: split.upcoming.length,
+      past: split.past.length,
+      now: split.now,
+    });
+    if (pastEl) renderList(pastEl, split.past, "No past events to show yet.");
+  } else {
+    console.error(LOG_PREFIX, "failed to load events", ttResult.reason);
+    if (pastEl) setStatus(pastEl, TT_ERROR);
+  }
+
+  let tortilla = [];
+  const tnFailed = tnResult.status !== "fulfilled";
+  if (tnFailed) {
+    console.error(
+      LOG_PREFIX,
+      "failed to load TortillaNet events",
+      tnResult.reason
+    );
+  } else {
+    tortilla = Array.isArray(tnResult.value) ? tnResult.value : [];
+    if (!ttFailed) {
+      const days = new Set(upcoming.map(ticketTailorDay).filter(Boolean));
+      tortilla = tortilla.filter((event) => {
+        const day = calendarDay(event.starts_at, PACIFIC);
+        return Boolean(day) && !days.has(day);
+      });
+    }
+  }
+
+  if (bannerEl) bannerEl.hidden = upcoming.length === 0;
+
+  if (upcomingEl) {
+    if (ttFailed) {
+      upcomingEl.hidden = false;
+      setStatus(upcomingEl, TT_ERROR);
+    } else if (!upcoming.length && tortilla.length) {
+      hidePanel(upcomingEl);
+    } else {
+      await showUpcoming(upcomingEl, upcoming);
+    }
+  }
+
+  if (!tnFailed && tortilla.length) {
+    renderTortillaList(tortillaEl, tortilla);
+  } else {
+    hidePanel(tortillaEl);
+  }
+}
+
+async function init() {
+  const upcomingEl = document.getElementById("events-upcoming");
+  const pastEl = document.getElementById("events-past");
+  const tortillaEl = document.getElementById("events-tortillanet");
+  const bannerEl = document.getElementById("events-tt-banner");
+  if (!upcomingEl && !pastEl && !tortillaEl) return;
+
+  if (tortillaEl) {
+    await initWithTortilla(upcomingEl, pastEl, tortillaEl, bannerEl);
+    return;
+  }
+  await initTicketTailorOnly(upcomingEl, pastEl);
 }
 
 init();

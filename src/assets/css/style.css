@@ -485,6 +485,34 @@ img {
   margin: -1rem 0 2rem;
 }
 
+.events-tt-banner {
+  margin-top: -1rem;
+}
+
+.events-tt-banner p {
+  margin: 0;
+  font-weight: 700;
+  color: var(--header);
+}
+
+.events-tortillanet-heading {
+  margin: 0.5rem 0 0;
+  font-size: 1.35rem;
+}
+
+.event-item__badge {
+  display: inline-block;
+  margin: 0.55rem 0 0;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--secondary);
+  color: var(--header);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .event-list {
   display: grid;
   gap: 1.25rem;
