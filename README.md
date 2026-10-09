@@ -179,9 +179,9 @@ DNS changes take a few minutes to a couple of hours. Once GitHub verifies the do
 
 ## Events (Ticket Tailor API)
 
-Events are managed in [Ticket Tailor](https://www.tickettailor.com/). This site loads them through a small FastAPI proxy in `api/` (so the Ticket Tailor secret key never ships to the browser). The Events page lists upcoming and past events; each event has its own page with a **Buy Tickets** button that opens Ticket Tailor checkout. Upcoming events also show attendee names (no emails or phone numbers).
+Events are managed in [Ticket Tailor](https://www.tickettailor.com/). The Events page embeds Ticket Tailor’s inline widget for upcoming tickets, so that list does not use the API. Past events and each event’s own page still load through a small FastAPI proxy in `api/` (so the Ticket Tailor secret key never ships to the browser). Those pages include a **Buy Tickets** button that opens Ticket Tailor checkout, and upcoming events on the event page show attendee names (no emails or phone numbers).
 
-The same page also lists future [TortillaNet](https://tortillanet.app/eugene-cuddle-club) nights in a collapsed section under Ticket Tailor, and links out to TortillaNet. A “Use Ticket Tailor” banner shows only when Ticket Tailor has upcoming events. The browser reads those nights with the public Supabase URL and anon key in `src/assets/js/public_keys.js` (`tortillanetSupabaseUrl`, `tortillanetSupabaseAnonKey`, `tortillanetCommunitySlug`). Leave the URL or key blank to hide that list.
+The Events page also lists future [TortillaNet](https://tortillanet.app/eugene-cuddle-club) nights in a collapsed section under the widget. The browser reads those nights with the public Supabase URL and anon key in `src/assets/js/public_keys.js` (`tortillanetSupabaseUrl`, `tortillanetSupabaseAnonKey`, `tortillanetCommunitySlug`). Leave the URL or key blank to hide that list.
 
 ### 1. Create a Ticket Tailor API key
 

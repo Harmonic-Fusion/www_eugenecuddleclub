@@ -6,11 +6,23 @@ description: Book tickets for the next Eugene Cuddle Club event and see how an e
 
 ## Upcoming events
 
-<div id="events-upcoming" class="events-panel" aria-live="polite" data-subscribe-url="{{ site.subscribeUrl }}" data-email="{{ site.email }}">
-  <p class="events-status">Loading events…</p>
+<div class="tt-widget">
+  <div class="tt-widget-fallback">
+    <div class="btn-row">
+      <a class="btn" href="{{ site.ticketsUrl }}" target="_blank" rel="noopener">Book Tickets</a>
+    </div>
+  </div>
+  <script
+    src="https://cdn.tickettailor.com/js/widgets/min/widget.js"
+    data-url="{{ site.widgetUrl }}"
+    data-type="inline"
+    data-inline-minimal="false"
+    data-inline-show-logo="false"
+    data-inline-bg-fill="true"
+  ></script>
 </div>
 
-<div id="events-tt-banner" class="callout callout--pink events-tt-banner" hidden>
+<div id="events-tt-banner" class="callout callout--pink events-tt-banner">
   <p><strong>Use Ticket Tailor</strong></p>
 </div>
 

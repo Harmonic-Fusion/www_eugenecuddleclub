@@ -240,75 +240,33 @@ async function initTicketTailorOnly(upcomingEl, pastEl) {
  * @param {HTMLElement} tortillaEl
  * @param {HTMLElement | null} bannerEl
  */
-async function initWithTortilla(upcomingEl, pastEl, tortillaEl, bannerEl) {
-  if (upcomingEl) setStatus(upcomingEl, "Loading events…");
-  if (pastEl) setStatus(pastEl, "Loading events…");
-  if (bannerEl) bannerEl.hidden = true;
+async function initWithTortilla(tortillaEl) {
   hideTortilla(tortillaEl);
 
-  const [ttResult, tnResult] = await Promise.allSettled([
-    apiGet("/events"),
-    fetchTortillaEvents(),
-  ]);
-
-  let upcoming = [];
-  const ttFailed = ttResult.status !== "fulfilled";
-
-  if (!ttFailed) {
-    const events = Array.isArray(ttResult.value?.data) ? ttResult.value.data : [];
-    const split = splitTicketTailor(events);
-    upcoming = split.upcoming;
-    console.info(LOG_PREFIX, "loaded", {
-      total: split.total,
-      upcoming: split.upcoming.length,
-      past: split.past.length,
-      now: split.now,
-    });
-    if (pastEl) renderList(pastEl, split.past, "No past events to show yet.");
-  } else {
-    console.error(LOG_PREFIX, "failed to load events", ttResult.reason);
-    if (pastEl) setStatus(pastEl, TT_ERROR);
-  }
-
   let tortilla = [];
-  const tnFailed = tnResult.status !== "fulfilled";
-  if (tnFailed) {
-    console.error(
-      LOG_PREFIX,
-      "failed to load TortillaNet events",
-      tnResult.reason
-    );
-  } else {
-    tortilla = Array.isArray(tnResult.value) ? tnResult.value : [];
-  }
-
-  if (bannerEl) bannerEl.hidden = upcoming.length === 0;
-
-  if (upcomingEl) {
-    if (ttFailed) {
-      upcomingEl.hidden = false;
-      setStatus(upcomingEl, TT_ERROR);
-    } else {
-      await showUpcoming(upcomingEl, upcoming);
-    }
-  }
-
-  if (!tnFailed && tortilla.length) {
-    renderTortillaList(tortillaEl, tortilla);
-  } else {
+  try {
+    tortilla = await fetchTortillaEvents();
+  } catch (err) {
+    console.error(LOG_PREFIX, "failed to load TortillaNet events", err);
     hideTortilla(tortillaEl);
+    return;
   }
+
+  if (!Array.isArray(tortilla) || !tortilla.length) {
+    hideTortilla(tortillaEl);
+    return;
+  }
+  renderTortillaList(tortillaEl, tortilla);
 }
 
 async function init() {
   const upcomingEl = document.getElementById("events-upcoming");
   const pastEl = document.getElementById("events-past");
   const tortillaEl = document.getElementById("events-tortillanet");
-  const bannerEl = document.getElementById("events-tt-banner");
   if (!upcomingEl && !pastEl && !tortillaEl) return;
 
   if (tortillaEl) {
-    await initWithTortilla(upcomingEl, pastEl, tortillaEl, bannerEl);
+    await initWithTortilla(tortillaEl);
     return;
   }
   await initTicketTailorOnly(upcomingEl, pastEl);

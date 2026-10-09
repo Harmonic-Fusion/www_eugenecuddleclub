@@ -459,6 +459,17 @@ img {
   margin-bottom: 0.25rem;
 }
 
+/* --- Ticket Tailor widget -------------------------------------- */
+
+.tt-widget {
+  margin: 2rem 0;
+  min-height: 12rem;
+}
+
+.tt-widget-fallback {
+  padding: 1.25rem 0;
+}
+
 /* --- Event list / detail (Ticket Tailor via proxy API) --------- */
 
 .events-panel {
