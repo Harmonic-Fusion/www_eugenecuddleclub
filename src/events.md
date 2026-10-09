@@ -14,7 +14,10 @@ description: Book tickets for the next Eugene Cuddle Club event and see how an e
   <p><strong>Use Ticket Tailor</strong></p>
 </div>
 
-<div id="events-tortillanet" class="events-panel" hidden></div>
+<details id="events-tortillanet" class="events-tortillanet" hidden>
+  <summary>On TortillaNet</summary>
+  <div class="events-tortillanet__list event-list"></div>
+</details>
 
 <div class="callout callout--rule">
 

@@ -70,24 +70,6 @@ const PACIFIC = "America/Los_Angeles";
 const TT_ERROR = "We couldn’t load events. Please try again later.";
 
 /**
- * Ticket Tailor start day in Pacific time, for deduping against TortillaNet.
- * @param {any} event
- */
-function ticketTailorDay(event) {
-  if (typeof event?.start?.unix === "number") {
-    return calendarDay(new Date(event.start.unix * 1000), PACIFIC);
-  }
-  if (
-    typeof event?.start?.date === "string" &&
-    /^\d{4}-\d{2}-\d{2}$/.test(event.start.date)
-  ) {
-    return event.start.date;
-  }
-  if (event?.start?.iso) return calendarDay(event.start.iso, PACIFIC);
-  return "";
-}
-
-/**
  * @param {any} event
  */
 function formatTortillaWhen(event) {
@@ -173,26 +155,22 @@ function renderTortillaItem(event) {
  * @param {any[]} events
  */
 function renderTortillaList(container, events) {
-  container.innerHTML = "";
-  const heading = document.createElement("h2");
-  heading.className = "events-tortillanet-heading";
-  heading.textContent = "On TortillaNet";
-  const list = document.createElement("div");
-  list.className = "event-list";
-  for (const event of events) {
-    list.appendChild(renderTortillaItem(event));
-  }
-  container.append(heading, list);
+  const list = container.querySelector(".events-tortillanet__list");
+  if (!list) return;
+  list.replaceChildren(...events.map(renderTortillaItem));
+  container.open = false;
   container.hidden = false;
 }
 
 /**
  * @param {HTMLElement | null} el
  */
-function hidePanel(el) {
+function hideTortilla(el) {
   if (!el) return;
   el.hidden = true;
-  el.innerHTML = "";
+  el.open = false;
+  const list = el.querySelector(".events-tortillanet__list");
+  if (list) list.replaceChildren();
 }
 
 /**
@@ -266,7 +244,7 @@ async function initWithTortilla(upcomingEl, pastEl, tortillaEl, bannerEl) {
   if (upcomingEl) setStatus(upcomingEl, "Loading events…");
   if (pastEl) setStatus(pastEl, "Loading events…");
   if (bannerEl) bannerEl.hidden = true;
-  hidePanel(tortillaEl);
+  hideTortilla(tortillaEl);
 
   const [ttResult, tnResult] = await Promise.allSettled([
     apiGet("/events"),
@@ -302,13 +280,6 @@ async function initWithTortilla(upcomingEl, pastEl, tortillaEl, bannerEl) {
     );
   } else {
     tortilla = Array.isArray(tnResult.value) ? tnResult.value : [];
-    if (!ttFailed) {
-      const days = new Set(upcoming.map(ticketTailorDay).filter(Boolean));
-      tortilla = tortilla.filter((event) => {
-        const day = calendarDay(event.starts_at, PACIFIC);
-        return Boolean(day) && !days.has(day);
-      });
-    }
   }
 
   if (bannerEl) bannerEl.hidden = upcoming.length === 0;
@@ -317,8 +288,6 @@ async function initWithTortilla(upcomingEl, pastEl, tortillaEl, bannerEl) {
     if (ttFailed) {
       upcomingEl.hidden = false;
       setStatus(upcomingEl, TT_ERROR);
-    } else if (!upcoming.length && tortilla.length) {
-      hidePanel(upcomingEl);
     } else {
       await showUpcoming(upcomingEl, upcoming);
     }
@@ -327,7 +296,7 @@ async function initWithTortilla(upcomingEl, pastEl, tortillaEl, bannerEl) {
   if (!tnFailed && tortilla.length) {
     renderTortillaList(tortillaEl, tortilla);
   } else {
-    hidePanel(tortillaEl);
+    hideTortilla(tortillaEl);
   }
 }
 
