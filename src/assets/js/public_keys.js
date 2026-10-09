@@ -7,7 +7,7 @@
  * their browser bundle. It is not a Ticket Tailor secret.
  */
 export const publicKeys = {
-  ticketTailorProxyUrl: "http://localhost:8000",
+  ticketTailorProxyUrl: "https://eugenecuddleclub.com",
   // Public Supabase client tortillanet.app already ships in the browser.
   // Leave the URL or key blank to hide the TortillaNet list on /events.
   tortillanetSupabaseUrl: "https://xqktvvwfyxiewplfvzvw.supabase.co",

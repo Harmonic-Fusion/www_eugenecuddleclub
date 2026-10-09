@@ -157,6 +157,11 @@ export function selectFutureEvents(rows, nowMs = Date.now()) {
     .map((event) => {
       const timeZone = resolveTimezone(event.timezone);
       const location = (event.location_name || "").trim();
+      const isPrivate = event.visibility === "members";
+      const inviteCode = isPrivate ? "cz4iwnpr" : null;
+      const url = inviteCode
+        ? `https://tortillanet.app/${slug}/${event.slug}?code=${inviteCode}`
+        : `https://tortillanet.app/${slug}/${event.slug}`;
       return {
         title: (event.title || "").trim() || "Untitled event",
         slug: event.slug,
@@ -165,8 +170,8 @@ export function selectFutureEvents(rows, nowMs = Date.now()) {
         timezone: timeZone,
         location_name: location || null,
         visibility: event.visibility || null,
-        members_only: event.visibility === "members",
-        url: `https://tortillanet.app/${slug}/${event.slug}`,
+        members_only: isPrivate,
+        url,
       };
     });
 }
