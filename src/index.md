@@ -25,12 +25,7 @@ Many adults don't get much non-sexual touch and it can be hard to find a way to 
 - Exercises practiced hands-on to ease into knowing one another.
 - Open time to practice consent and experience touch.
 
-
-<div class="callout callout--pink">
-
-**All touch in our spaces is invited, not assumed.** Every activity is consent based. You are in choice the whole time, and there is always an opt-out space you can step into and rejoin whenever you like.
-
-</div>
+> *Aña and Dylan facilitate such a wonderful, inclusive, and safe container for complete strangers to come together in authentic humanness and experience the primal joy of affectionate touch. There is no better way to achieve world peace ✌️*
 
 
 ## Where we meet
