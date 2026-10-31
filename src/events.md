@@ -6,29 +6,37 @@ description: Book tickets for the next Eugene Cuddle Club event and see how an e
 
 ## Upcoming events
 
-<div class="tt-widget">
-  <div class="tt-widget-fallback">
-    <div class="btn-row">
-      <a class="btn" href="{{ site.ticketsUrl }}" target="_blank" rel="noopener">Book Tickets</a>
+<details class="events-fold" open>
+  <summary>Ticket Tailor</summary>
+  <div class="tt-widget">
+    <div class="tt-widget-fallback">
+      <div class="btn-row">
+        <a class="btn" href="{{ site.ticketsUrl }}" target="_blank" rel="noopener">Book Tickets</a>
+      </div>
     </div>
+    <script
+      src="https://cdn.tickettailor.com/js/widgets/min/widget.js"
+      data-url="{{ site.widgetUrl }}"
+      data-type="inline"
+      data-inline-minimal="false"
+      data-inline-show-logo="false"
+      data-inline-bg-fill="true"
+    ></script>
   </div>
-  <script
-    src="https://cdn.tickettailor.com/js/widgets/min/widget.js"
-    data-url="{{ site.widgetUrl }}"
-    data-type="inline"
-    data-inline-minimal="false"
-    data-inline-show-logo="false"
-    data-inline-bg-fill="true"
-  ></script>
-</div>
+</details>
 
-<div id="events-tt-banner" class="callout callout--pink events-tt-banner">
-  <p><strong>Use Ticket Tailor</strong></p>
-</div>
-
-<details id="events-tortillanet" class="events-tortillanet" hidden>
-  <summary>On TortillaNet</summary>
-  <div class="events-tortillanet__list event-list"></div>
+<details class="events-fold">
+  <summary>Tortillanet</summary>
+  <div class="events-tortillanet">
+    <iframe
+      src="https://tortillanet.app/embed/eugene-cuddle-club?theme=auto"
+      title="Upcoming events"
+      loading="lazy"
+      style="border:0;width:100%;max-width:480px"
+      height="640"
+    ></iframe>
+    <script src="https://tortillanet.app/embed.js" async></script>
+  </div>
 </details>
 
 <div class="callout callout--rule">
@@ -97,4 +105,3 @@ Dedicated childcare is available on-site in its own separate space, separately s
 
 Questions before you book? Reach out to the organizing team &mdash; we're happy to talk through what to expect. [{{ site.email }}](mailto:{{ site.email }})
 
-<script type="module" src="/assets/js/events-list.js"></script>

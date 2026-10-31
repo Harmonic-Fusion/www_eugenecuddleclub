@@ -6,7 +6,6 @@ import {
   setUpcomingEmpty,
   stripHtml,
 } from "./events-api.js";
-import { calendarDay, fetchTortillaEvents } from "./tortillanet.js";
 
 const LOG_PREFIX = "[events-list]";
 
@@ -66,112 +65,7 @@ function renderList(container, events, emptyMessage) {
   container.appendChild(list);
 }
 
-const PACIFIC = "America/Los_Angeles";
 const TT_ERROR = "We couldn’t load events. Please try again later.";
-
-/**
- * @param {any} event
- */
-function formatTortillaWhen(event) {
-  const timeZone = event?.timezone || PACIFIC;
-  const start = new Date(event?.starts_at);
-  if (Number.isNaN(start.getTime())) return "";
-
-  const dateOpts = {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    timeZone,
-  };
-  const timeOpts = { hour: "numeric", minute: "2-digit", timeZone };
-  const date = start.toLocaleDateString("en-US", dateOpts);
-  const startTime = start.toLocaleTimeString("en-US", timeOpts);
-  let zone = "";
-  try {
-    zone =
-      new Intl.DateTimeFormat("en-US", {
-        timeZone,
-        timeZoneName: "short",
-      })
-        .formatToParts(start)
-        .find((part) => part.type === "timeZoneName")?.value || "";
-  } catch {
-    zone = "";
-  }
-  const zoneSuffix = zone ? ` ${zone}` : "";
-  const end = event?.ends_at ? new Date(event.ends_at) : null;
-  if (!end || Number.isNaN(end.getTime())) {
-    return `${date} at ${startTime}${zoneSuffix}`;
-  }
-  const endTime = end.toLocaleTimeString("en-US", timeOpts);
-  if (calendarDay(start, timeZone) === calendarDay(end, timeZone)) {
-    return `${date}, ${startTime} – ${endTime}${zoneSuffix}`;
-  }
-  const endDate = end.toLocaleDateString("en-US", dateOpts);
-  return `${date} at ${startTime} – ${endDate} at ${endTime}${zoneSuffix}`;
-}
-
-/**
- * @param {any} event
- * @returns {HTMLElement}
- */
-function renderTortillaItem(event) {
-  const link = document.createElement("a");
-  link.className = "event-item";
-  link.href = event.url;
-  link.target = "_blank";
-  link.rel = "noopener";
-
-  const title = document.createElement("h3");
-  title.className = "event-item__title";
-  title.textContent = event.title || "Untitled event";
-
-  const meta = document.createElement("p");
-  meta.className = "event-item__meta";
-  meta.textContent = formatTortillaWhen(event);
-
-  link.appendChild(title);
-  if (meta.textContent) link.appendChild(meta);
-
-  if (event.location_name) {
-    const place = document.createElement("p");
-    place.className = "event-item__desc";
-    place.textContent = event.location_name;
-    link.appendChild(place);
-  }
-
-  if (event.members_only || event.visibility === "members") {
-    const badge = document.createElement("p");
-    badge.className = "event-item__badge";
-    badge.textContent = "Members only";
-    link.appendChild(badge);
-  }
-
-  return link;
-}
-
-/**
- * @param {HTMLElement} container
- * @param {any[]} events
- */
-function renderTortillaList(container, events) {
-  const list = container.querySelector(".events-tortillanet__list");
-  if (!list) return;
-  list.replaceChildren(...events.map(renderTortillaItem));
-  container.open = false;
-  container.hidden = false;
-}
-
-/**
- * @param {HTMLElement | null} el
- */
-function hideTortilla(el) {
-  if (!el) return;
-  el.hidden = true;
-  el.open = false;
-  const list = el.querySelector(".events-tortillanet__list");
-  if (list) list.replaceChildren();
-}
 
 /**
  * @param {any[]} events
@@ -204,7 +98,7 @@ async function showUpcoming(upcomingEl, upcoming) {
 }
 
 /**
- * Past events page and the subscribe confirmation keep the original list.
+ * Past events page and the subscribe confirmation keep the Ticket Tailor list.
  * @param {HTMLElement | null} upcomingEl
  * @param {HTMLElement | null} pastEl
  */
@@ -233,42 +127,10 @@ async function initTicketTailorOnly(upcomingEl, pastEl) {
   }
 }
 
-/**
- * /events: Ticket Tailor and TortillaNet together.
- * @param {HTMLElement | null} upcomingEl
- * @param {HTMLElement | null} pastEl
- * @param {HTMLElement} tortillaEl
- * @param {HTMLElement | null} bannerEl
- */
-async function initWithTortilla(tortillaEl) {
-  hideTortilla(tortillaEl);
-
-  let tortilla = [];
-  try {
-    tortilla = await fetchTortillaEvents();
-  } catch (err) {
-    console.error(LOG_PREFIX, "failed to load TortillaNet events", err);
-    hideTortilla(tortillaEl);
-    return;
-  }
-
-  if (!Array.isArray(tortilla) || !tortilla.length) {
-    hideTortilla(tortillaEl);
-    return;
-  }
-  renderTortillaList(tortillaEl, tortilla);
-}
-
 async function init() {
   const upcomingEl = document.getElementById("events-upcoming");
   const pastEl = document.getElementById("events-past");
-  const tortillaEl = document.getElementById("events-tortillanet");
-  if (!upcomingEl && !pastEl && !tortillaEl) return;
-
-  if (tortillaEl) {
-    await initWithTortilla(tortillaEl);
-    return;
-  }
+  if (!upcomingEl && !pastEl) return;
   await initTicketTailorOnly(upcomingEl, pastEl);
 }
 
