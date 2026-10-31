@@ -459,10 +459,55 @@ img {
   margin-bottom: 0.25rem;
 }
 
+/* --- Events source folds (Ticket Tailor / Tortillanet) --------- */
+
+.events-fold {
+  margin: 0 0 1.5rem;
+}
+
+.events-fold > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.5rem 0;
+  font-weight: 700;
+  color: var(--header);
+  user-select: none;
+}
+
+.events-fold > summary::-webkit-details-marker {
+  display: none;
+}
+
+.events-fold > summary::before {
+  content: "";
+  display: inline-block;
+  width: 0.45em;
+  height: 0.45em;
+  margin-right: 0.65em;
+  border-right: 2px solid var(--header);
+  border-bottom: 2px solid var(--header);
+  transform: rotate(-45deg);
+  vertical-align: 0.15em;
+  transition: transform 0.15s ease;
+}
+
+.events-fold[open] > summary::before {
+  transform: rotate(45deg);
+  vertical-align: 0.35em;
+}
+
+.events-fold > summary:hover {
+  color: var(--primary-ink);
+}
+
+.events-fold > summary:hover::before {
+  border-color: var(--primary-ink);
+}
+
 /* --- Ticket Tailor widget -------------------------------------- */
 
 .tt-widget {
-  margin: 2rem 0;
+  margin: 1rem 0 1.5rem;
   min-height: 12rem;
 }
 
@@ -497,7 +542,7 @@ img {
 }
 
 .events-tt-banner {
-  margin-top: -1rem;
+  margin: 0 0 1.25rem;
 }
 
 .events-tt-banner p {
@@ -507,7 +552,7 @@ img {
 }
 
 .events-tortillanet {
-  margin: 0 0 2.5rem;
+  margin: 1rem 0 1.25rem;
 }
 
 .events-tortillanet iframe {
