@@ -181,7 +181,7 @@ DNS changes take a few minutes to a couple of hours. Once GitHub verifies the do
 
 Events are managed in [Ticket Tailor](https://www.tickettailor.com/). The Events page embeds Ticket Tailor’s inline widget for upcoming tickets, so that list does not use the API. Past events and each event’s own page still load through a small FastAPI proxy in `api/` (so the Ticket Tailor secret key never ships to the browser). Those pages include a **Buy Tickets** button that opens Ticket Tailor checkout, and upcoming events on the event page show attendee names (no emails or phone numbers).
 
-The Events page also embeds upcoming [TortillaNet](https://tortillanet.app/eugene-cuddle-club) nights under the Ticket Tailor widget via TortillaNet’s official embed iframe.
+The Events page also lists upcoming [TortillaNet](https://tortillanet.app/eugene-cuddle-club) nights under the Ticket Tailor widget. That list is fetched in the browser from the keyless public feed at `https://tortillanet.app/embed/eugene-cuddle-club/events.json` — no API key and not the server-to-server TortillaNet API.
 
 ### 1. Create a Ticket Tailor API key
 

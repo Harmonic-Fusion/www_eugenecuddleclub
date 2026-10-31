@@ -27,17 +27,11 @@ description: Book tickets for the next Eugene Cuddle Club event and see how an e
 
 <details class="events-fold">
   <summary>Tortillanet</summary>
-  <div class="events-tortillanet">
-    <iframe
-      src="https://tortillanet.app/embed/eugene-cuddle-club?theme=auto"
-      title="Upcoming events"
-      loading="lazy"
-      style="border:0;width:100%;max-width:480px"
-      height="640"
-    ></iframe>
-    <script src="https://tortillanet.app/embed.js" async></script>
+  <div id="events-tortillanet" class="events-tortillanet" hidden>
+    <div class="event-list events-tortillanet__list"></div>
   </div>
 </details>
+<script type="module" src="/assets/js/tortillanet-feed.js"></script>
 
 <div class="callout callout--rule">
 
