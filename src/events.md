@@ -26,10 +26,16 @@ description: Book tickets for the next Eugene Cuddle Club event and see how an e
   <p><strong>Use Ticket Tailor</strong></p>
 </div>
 
-<details id="events-tortillanet" class="events-tortillanet" hidden>
-  <summary>On TortillaNet</summary>
-  <div class="events-tortillanet__list event-list"></div>
-</details>
+<div class="events-tortillanet">
+  <iframe
+    src="https://tortillanet.app/embed/eugene-cuddle-club?theme=auto"
+    title="Upcoming events"
+    loading="lazy"
+    style="border:0;width:100%;max-width:480px"
+    height="640"
+  ></iframe>
+  <script src="https://tortillanet.app/embed.js" async></script>
+</div>
 
 <div class="callout callout--rule">
 
@@ -97,4 +103,3 @@ Dedicated childcare is available on-site in its own separate space, separately s
 
 Questions before you book? Reach out to the organizing team &mdash; we're happy to talk through what to expect. [{{ site.email }}](mailto:{{ site.email }})
 
-<script type="module" src="/assets/js/events-list.js"></script>
